@@ -29,9 +29,18 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
         OAuth2User oAuth2User = super.loadUser(userRequest);
 
-        String oauthId = oAuth2User.getName();
-
         String providerTypeCode = userRequest.getClientRegistration().getRegistrationId().toUpperCase();
+        String oauthId = "";
+
+        switch (providerTypeCode){
+            case "KAKAO":
+                oauthId = oAuth2User.getName();
+                break;
+
+            case "GOOGLE":
+                oauthId = oAuth2User.getAttribute("sub");
+                break;
+        }
 
         String username = providerTypeCode + "__%s".formatted(oauthId);
 
