@@ -33,10 +33,11 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         String oauthId = "";
 
         switch (providerTypeCode){
+            //카카오 로그인인 경우
             case "KAKAO":
                 oauthId = oAuth2User.getName();
                 break;
-
+            //구글 로그인인 경우
             case "GOOGLE":
                 oauthId = oAuth2User.getAttribute("sub");
                 break;
