@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -53,6 +54,11 @@ public class LikeablePersonService {
     public RsData<LikeablePerson> delete(Member member, long likeableId) {
         //호감표시 데이터의 id를 기반으로 LikeablePerson의 데이터를 가져옴
         LikeablePerson lp = likeablePersonRepository.findById(likeableId);
+
+        //없는 데이터를 삭제하려는 경우
+        if(lp == null){
+            return RsData.of("F-2","잘못된 삭제 입니다.");
+        }
 
         //로그인된 사용자의 이름과 호감표시 데이터의 from 사용자 (등록자)의 이름이 다른경우 권한없음 결과 반환
         if(!member.getInstaMember().getUsername().equals(lp.getFromInstaMember().getUsername())) {
