@@ -69,7 +69,6 @@ public class LikeablePersonController {
             return rq.historyBack(deleteRsData);
         }
 
-        //return rq.historyBack(deleteRsData);
         return rq.redirectWithMsg("/likeablePerson/list", deleteRsData);
     }
 }

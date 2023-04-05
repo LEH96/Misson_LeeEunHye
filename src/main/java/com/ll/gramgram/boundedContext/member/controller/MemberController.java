@@ -1,9 +1,9 @@
 package com.ll.gramgram.boundedContext.member.controller;
 
-import com.ll.gramgram.base.rq.Rq;
 import com.ll.gramgram.base.rsData.RsData;
-import com.ll.gramgram.boundedContext.member.entity.Member;
 import com.ll.gramgram.boundedContext.member.service.MemberService;
+import com.ll.gramgram.base.rq.Rq;
+import com.ll.gramgram.boundedContext.member.entity.Member;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
