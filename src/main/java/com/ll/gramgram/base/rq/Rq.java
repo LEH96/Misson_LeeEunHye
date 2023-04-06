@@ -69,6 +69,8 @@ public class Rq {
         String key = "historyBackErrorMsg___" + referer;
         req.setAttribute("localStorageKeyAboutHistoryBackErrorMsg", key);
         req.setAttribute("historyBackErrorMsg", msg);
+        // common/js는 단순히 페이지만 띄우기 때문에 200 응답코드(성공)를 가져온다 -> 400 응답코드(오류)로 변경
+        resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
         return "common/js";
     }
 

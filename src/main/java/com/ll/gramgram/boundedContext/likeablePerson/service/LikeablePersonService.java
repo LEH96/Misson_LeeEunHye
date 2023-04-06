@@ -51,26 +51,26 @@ public class LikeablePersonService {
     }
 
     @Transactional
-    public RsData<LikeablePerson> delete(Member member, long likeableId) {
-        //호감표시 데이터의 id를 기반으로 LikeablePerson의 데이터를 가져옴
+    public RsData<LikeablePerson> delete(Member member, Long likeableId) {
+        //호감 데이터의 id로 LikeablePerson 객체를 가져옴
         LikeablePerson lp = likeablePersonRepository.findById(likeableId);
 
         //없는 데이터를 삭제하려는 경우
         if(lp == null){
-            return RsData.of("F-2","잘못된 삭제 입니다.");
+            return RsData.of("F-1","잘못된 삭제 입니다.");
         }
 
         //로그인된 사용자의 이름과 호감표시 데이터의 from 사용자 (등록자)의 이름이 다른경우 권한없음 결과 반환
         if(!member.getInstaMember().getUsername().equals(lp.getFromInstaMember().getUsername())) {
-            return RsData.of("F-1","삭제 권한이 없습니다.");
+            return RsData.of("F-2","삭제 권한이 없습니다.");
         }
 
         //권한이 확인되면 데이터를 삭제해주고 성공 결과 반환
-        likeablePersonRepository.deleteById(likeableId);
-        return RsData.of("S-1","해당 호감표시가 삭제되었습니다.");
+        likeablePersonRepository.delete(lp);
+        return RsData.of("S-1","해당 호감을 삭제하였습니다.");
     }
 
-    public LikeablePerson findByFromId(long likeableId) {
+    public LikeablePerson findByFromId(Long likeableId) {
         LikeablePerson lp = likeablePersonRepository.findById(likeableId);
         return lp;
     }

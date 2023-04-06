@@ -62,7 +62,7 @@ public class LikeablePersonController {
     }
 
     @GetMapping("/delete/{likeableId}")
-    public String delete(@PathVariable long likeableId){
+    public String delete(@PathVariable Long likeableId){
         //호감데이터 삭제 후 결과메세지를 RsData에 담는다
         RsData<LikeablePerson> deleteRsData = likeablePersonService.delete(rq.getMember(), likeableId);
 
