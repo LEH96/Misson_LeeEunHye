@@ -64,7 +64,7 @@
         if (localStorage.getItem(localStorageKeyAboutHistoryBackErrorMsg)) {
             toastWarning(localStorage.getItem(localStorageKeyAboutHistoryBackErrorMsg));
             localStorage.removeItem(localStorageKeyAboutHistoryBackErrorMsg);
-        } else {
+        } else if(!document.referrer){ //referer 가 없는 경우, 이전 페이지가 없는 경우
             const localStorageKeyAboutHistoryBackErrorMsg = "historyBackErrorMsg___null";
 
             if (localStorage.getItem(localStorageKeyAboutHistoryBackErrorMsg)) {

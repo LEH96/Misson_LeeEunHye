@@ -18,6 +18,10 @@ spring:
             authorization-grant-type: authorization_code
             redirect-uri: http://localhost:8080/login/oauth2/code/kakao
             client-authentication-method: POST
+          google:
+            client-id:
+            client-secret:
+            scope:
         provider:
           kakao:
             authorization-uri: https://kauth.kakao.com/oauth/authorize
@@ -35,6 +39,6 @@ spring:
 logging:
   level:
     root: INFO
-    com.ll.gramgram_ai: DEBUG
+    com.ll.gramgram: DEBUG
     org.hibernate.orm.jdbc.bind: TRACE
     org.hibernate.orm.jdbc.extract: TRACE

@@ -54,17 +54,17 @@ public class LikeablePersonController {
 
         // 인스타인증을 했는지 체크
         if (instaMember != null) {
-            List<LikeablePerson> likeablePeople = likeablePersonService.findByFromInstaMemberId(instaMember.getId());
+            List<LikeablePerson> likeablePeople = instaMember.getFromLikeablePeople();
             model.addAttribute("likeablePeople", likeablePeople);
         }
 
         return "usr/likeablePerson/list";
     }
 
-    @GetMapping("/delete/{likeableId}")
-    public String delete(@PathVariable Long likeableId){
+    @PostMapping("/delete/{id}")
+    public String delete(@PathVariable Long id){
         //호감데이터 삭제 후 결과메세지를 RsData에 담는다
-        RsData<LikeablePerson> deleteRsData = likeablePersonService.delete(rq.getMember(), likeableId);
+        RsData<LikeablePerson> deleteRsData = likeablePersonService.delete(rq.getMember(), id);
 
         //실패한 경우 실패 메시지 띄우기
         if(deleteRsData.isFail()) {
