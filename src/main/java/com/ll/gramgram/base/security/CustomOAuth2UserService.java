@@ -8,6 +8,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
+import org.springframework.security.oauth2.core.OAuth2AccessToken;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
@@ -30,7 +31,14 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         OAuth2User oAuth2User = super.loadUser(userRequest);
 
         String providerTypeCode = userRequest.getClientRegistration().getRegistrationId().toUpperCase();
-        String oauthId = oAuth2User.getName();
+        String oauthId = "";
+
+        if(providerTypeCode.equals("NAVER")){
+            Map<String, Object> naverInfo = oAuth2User.getAttribute("response");
+            oauthId = naverInfo.get("id").toString();
+        } else {
+            oauthId = oAuth2User.getName();
+        }
         String username = providerTypeCode + "__%s".formatted(oauthId);
 
         Member member = memberService.whenSocialLogin(providerTypeCode, username).getData();
