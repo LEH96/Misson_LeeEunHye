@@ -13,6 +13,7 @@ spring:
         registration:
           kakao:
             clientId:
+            client-secret:
             scope:
             client-name: Kakao
             authorization-grant-type: authorization_code
@@ -22,6 +23,8 @@ spring:
             client-id:
             client-secret:
             scope:
+            client-name: Google
+            redirect-uri: http://localhost:8080/login/oauth2/code/google
           naver:
             client-id:
             client-secret:

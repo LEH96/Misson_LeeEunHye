@@ -36,8 +36,6 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         if(providerTypeCode.equals("NAVER")){
             Map<String, Object> naverInfo = oAuth2User.getAttribute("response");
             oauthId = naverInfo.get("id").toString();
-        } else if(providerTypeCode.equals("GOOGLE")){
-            oauthId = oAuth2User.getAttribute("sub").toString();
         } else {
             oauthId = oAuth2User.getName();
         }

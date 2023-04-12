@@ -21,6 +21,7 @@
       SET modify_date = NOW(), <br>
       attractive_type_code = 2 <br>
       WHERE id = 5;
+    - [ ] 수정된 데이터를 목록에서 보여줄때 다르게 보여줄 방법
 
 - [x] 코드 리팩토링
 - [x] 테스트케이스 추가 : 강사님이 주신 코드 사용
