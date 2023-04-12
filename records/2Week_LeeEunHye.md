@@ -21,12 +21,15 @@
       SET modify_date = NOW(), <br>
       attractive_type_code = 2 <br>
       WHERE id = 5;
-    - https://velog.io/@roro/JPA-JPQL-update-쿼리벌크와-영속성-컨텍스트
-    - https://wakestand.tistory.com/946
-- [ ] 코드 깔끔하게 다듬기
-- [ ] 테스트 케이스 추가하기
-- [ ] 또 다른 예외는 없는지 확인
+
+- [x] 코드 리팩토링
+- [x] 테스트케이스 추가 : 강사님이 주신 코드 사용
+- 또 다른 예외는 없는지 확인
   - [ ] 인스타 아이디에 한글 넣었을 때 에러 페이지 나옴 : JDBC exception executing
+
+- 참고문헌
+- https://velog.io/@roro/JPA-JPQL-update-쿼리벌크와-영속성-컨텍스트
+- https://wakestand.tistory.com/946
 
 ### 선택미션 - 네이버 로그인
 - [x] 선택미션 (네이버 로그인으로 가입한 회원의 providerTypeCode : NAVER)
@@ -39,10 +42,14 @@ username = 'NAVER__2731659195', <br>
 password = '', <br>
 insta_member_id = NULL;
 
+- 참고문헌
 https://velog.io/@mardi2020/Spring-Boot-Spring-Security-OAuth2-네이버-로그인-해보기
 
 ### 추가미션 - 개인적으로 진행
-1. UI 추가하기
-2. 테스트케이스 추가 : 강사님 깃 코드 확인
-3. 오류 더 없나 체크
-4. 추가 기능 구현해보기
+- [x] UI 추가하기
+  - [x] 메인페이지
+  - [x] 로그인 페이지
+  - [x] 회원가입 페이지
+  - [x] 인스타 아이디 인증 페이지
+  - [x] 호감 표시 페이지
+- [ ] 갑자기 구글 로그인 안됨??

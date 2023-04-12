@@ -37,30 +37,52 @@
         }
     </script>
 
-    <form th:action method="POST" class="p-10 max-w-sm flex flex-col gap-4"
-          onsubmit="ConnectForm__submit(this); return false;">
-        <div>
-            <input type="text" name="username" autocomplete="off" maxlength="30" placeholder="인스타그램 아이디"
-                   class="input input-bordered">
+    <div class="flex-grow flex items-center justify-center">
+        <div class="max-w-2xl w-full px-4">
+            <h1 class="mb-4">
+                <i class="fa-brands fa-instagram"></i>
+                인스타아이디 인증
+            </h1>
+
+            <form th:action method="POST" class="flex flex-col gap-6"
+                  onsubmit="ConnectForm__submit(this); return false;">
+                <div class="form-control">
+                    <label class="label flex">
+                        <div class="flex gap-5">
+                            <span class="label-text">인스타아이디</span>
+                            <span class="badge" th:if="${@rq.member.instaMember}" th:text="${@rq.member.instaMember.username}"></span>
+                        </div>
+                    </label>
+                    <input type="text" name="username" autocomplete="off" maxlength="30" placeholder="인스타그램 아이디"
+                           class="input input-bordered">
+                </div>
+                <div>
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text">성별</span>
+                        </label>
+                    </div>
+                    <div class="flex justify-center gap-4">
+                        <label class="flex gap-2 items-center cursor-pointer">
+                            <input type="radio" name="gender" class="radio" checked>
+                            <i class="fa-solid fa-venus" style="color: #fb6abf;"></i>
+                            <span>여성</span>
+                        </label>
+
+                        <label class="flex gap-2 items-center cursor-pointer">
+                            <input type="radio" name="gender" class="radio">
+                            <i class="fa-solid fa-mars" style="color: #1f8ce0;"></i>
+                            <span>남성</span>
+                        </label>
+                    </div>
+                </div>
+                <button class="btn btn-block btn-primary gap-1">
+                    <i class="fa-brands fa-instagram"></i>
+                    <span>인스타아이디 인증</span>
+                </button>
+            </form>
         </div>
-        <div>
-            <div class="form-control">
-                <label class="label cursor-pointer">
-                    <span class="label-text">남자</span>
-                    <input type="radio" name="gender" value="M" class="radio focus:bg-red-100">
-                </label>
-            </div>
-            <div class="form-control">
-                <label class="label cursor-pointer">
-                    <span class="label-text">여자</span>
-                    <input type="radio" name="gender" value="W" class="radio focus:bg-red-100">
-                </label>
-            </div>
-        </div>
-        <div>
-            <input type="submit" value="정보입력" class="btn btn-primary">
-        </div>
-    </form>
+    </div>
 </main>
 </body>
 

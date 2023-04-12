@@ -1,7 +1,9 @@
 package com.ll.gramgram.boundedContext.likeablePerson.service;
 
+import com.ll.gramgram.base.appConfig.AppConfig;
 import com.ll.gramgram.base.rsData.RsData;
 import com.ll.gramgram.boundedContext.instaMember.service.InstaMemberService;
+import com.ll.gramgram.boundedContext.likeablePerson.entity.LikeablePersonUtils;
 import com.ll.gramgram.boundedContext.likeablePerson.repository.LikeablePersonRepository;
 import com.ll.gramgram.boundedContext.instaMember.entity.InstaMember;
 import com.ll.gramgram.boundedContext.likeablePerson.entity.LikeablePerson;
@@ -10,8 +12,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -22,44 +22,26 @@ public class LikeablePersonService {
     private final InstaMemberService instaMemberService;
 
     @Transactional
-    public RsData<LikeablePerson> like(Member member, String username, int newAttractiveTypeCode) {
-
-        if (!member.hasConnectedInstaMember()) {
-            return RsData.of("F-1", "먼저 본인의 인스타그램 아이디를 입력해야 합니다.");
-        }
-
-        if (member.getInstaMember().getUsername().equals(username)) {
-            return RsData.of("F-2", "본인을 호감상대로 등록할 수 없습니다.");
-        }
+    public RsData<LikeablePerson> like(Member member, String username, int attractiveTypeCode) {
 
         InstaMember fromInstaMember = member.getInstaMember();
         InstaMember toInstaMember = instaMemberService.findByUsernameOrCreate(username).getData();
 
-        Optional<LikeablePerson> olp = likeablePersonRepository.findByFromInstaMemberIdAndToInstaMemberId(fromInstaMember.getId(), toInstaMember.getId());
+        //예외 처리 케이스를 확인하고 결과를 받아옴
+        RsData<LikeablePerson> tryCreateRsData = tryCreateLikeablePerson(member, username, attractiveTypeCode);
 
-        if (olp.isPresent()) {
-            LikeablePerson lp = olp.get();
-            int nowAttractiveTypeCode = lp.getAttractiveTypeCode();
+        //실패했거나 수정인 경우 해당 결과 메세지를 반환해준다
+        if(tryCreateRsData.isFail() || tryCreateRsData.getResultCode().equals("S-2"))
+            return tryCreateRsData;
 
-            if(nowAttractiveTypeCode == newAttractiveTypeCode)
-                return RsData.of("F-3","중복된 호감 표시를 등록할 수 없습니다.");
-
-            likeablePersonRepository.updateAttractiveTypeCode(newAttractiveTypeCode, lp.getId());
-
-            return RsData.of("S-2","%s의 호감 표시(%s -> %s)를 수정하였습니다.".formatted(username, attractionName(nowAttractiveTypeCode), attractionName(newAttractiveTypeCode)));
-        }
-
-        if (member.getInstaMember().getFromLikeablePeople().size() == 10) {
-            return RsData.of("F-4","11명 이상의 호감을 생성할 수는 없습니다.");
-        }
-
+        //성공한 경우 호감 표시 등록
         LikeablePerson likeablePerson = LikeablePerson
                 .builder()
                 .fromInstaMember(fromInstaMember) // 호감을 표시하는 사람의 인스타 멤버
                 .fromInstaMemberUsername(member.getInstaMember().getUsername()) // 중요하지 않음
                 .toInstaMember(toInstaMember) // 호감을 받는 사람의 인스타 멤버
                 .toInstaMemberUsername(toInstaMember.getUsername()) // 중요하지 않음
-                .attractiveTypeCode(newAttractiveTypeCode) // 1=외모, 2=능력, 3=성격
+                .attractiveTypeCode(attractiveTypeCode) // 1=외모, 2=능력, 3=성격
                 .build();
 
         likeablePersonRepository.save(likeablePerson); // 저장
@@ -71,8 +53,44 @@ public class LikeablePersonService {
         return RsData.of("S-1", "입력하신 인스타유저(%s)를 호감상대로 등록되었습니다.".formatted(username), likeablePerson);
     }
 
-    public List<LikeablePerson> findByFromInstaMemberId(Long fromInstaMemberId) {
-        return likeablePersonRepository.findByFromInstaMemberId(fromInstaMemberId);
+    private RsData<LikeablePerson> tryCreateLikeablePerson(Member member, String username, int newAttractiveTypeCode) {
+        //인스타그램 아이디가 연결되었는지 확인
+        if (!member.hasConnectedInstaMember()) {
+            return RsData.of("F-1", "먼저 본인의 인스타그램 아이디를 입력해야 합니다.");
+        }
+
+        //호감 표시하려는 아이디와 본인의 인스타그램 아이디가 같은 경우
+        if (member.getInstaMember().getUsername().equals(username)) {
+            return RsData.of("F-2", "본인을 호감상대로 등록할 수 없습니다.");
+        }
+
+        InstaMember fromInstaMember = member.getInstaMember();
+        InstaMember toInstaMember = instaMemberService.findByUsernameOrCreate(username).getData();
+
+        //호감 표시를 등록한 사람과 받은 사람의 아이디가 둘 다 같은 데이터가 존재하는지 확인
+        Optional<LikeablePerson> sameLikeablePersonExists = likeablePersonRepository.findByFromInstaMember_IdAndToInstaMember_Id(fromInstaMember.getId(), toInstaMember.getId());
+
+        //같은 데이터가 존재하는 경우
+        if (sameLikeablePersonExists.isPresent()) {
+            LikeablePerson likeablePerson = sameLikeablePersonExists.get();
+            int oldAttractiveTypeCode = likeablePerson.getAttractiveTypeCode();
+
+            //등록하려는 호감표시의 호감타입코드도 같은 경우
+            if(oldAttractiveTypeCode == newAttractiveTypeCode)
+                return RsData.of("F-3","중복된 호감 표시를 등록할 수 없습니다.");
+
+            //등록하려는 호감표시의 호감타입코드를 다르게 수정하려고 하는 경우
+            likeablePersonRepository.updateAttractiveTypeCode(newAttractiveTypeCode, likeablePerson.getId());
+            return RsData.of("S-2","%s의 호감 표시(%s -> %s)를 수정하였습니다.".formatted(username, getAttractionName(oldAttractiveTypeCode), getAttractionName(newAttractiveTypeCode)));
+        }
+
+        //11명 이상의 호감표시를 등록하려고 하는 경우
+        if (member.getInstaMember().getFromLikeablePeople().size() == AppConfig.getLikeablePersonFromMax()) {
+            return RsData.of("F-4","11명 이상의 호감을 생성할 수는 없습니다.");
+        }
+
+        //정상적인 등록
+        return RsData.of("S-1", "생성이 가능합니다.");
     }
 
     @Transactional
@@ -99,11 +117,11 @@ public class LikeablePersonService {
         return RsData.of("S-1","%s님에 대한 호감을 삭제하였습니다.".formatted(likeablePerson.getToInstaMemberUsername()));
     }
 
-    public String attractionName(int attractiveTypeCode) {
-        return switch (attractiveTypeCode) {
-            case 1 -> "외모";
-            case 2 -> "성격";
-            default -> "능력";
-        };
+    public String getAttractionName(int attractiveTypeCode) {
+        return LikeablePersonUtils.getAttractiveTypeDisplayName(attractiveTypeCode);
+    }
+
+    public Optional<LikeablePerson> findById(Long id) {
+        return likeablePersonRepository.findById(id);
     }
 }

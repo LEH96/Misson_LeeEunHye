@@ -13,9 +13,13 @@ public interface LikeablePersonRepository extends JpaRepository<LikeablePerson, 
     List<LikeablePerson> findByFromInstaMemberId(Long fromInstaMemberId);
     Optional<LikeablePerson> findById(Long likeablePersonId);
 
-    Optional<LikeablePerson> findByFromInstaMemberIdAndToInstaMemberId(Long fromInstaId, Long toInstaId);
+    Optional<LikeablePerson> findByFromInstaMember_IdAndToInstaMember_Id(Long fromInstaId, Long toInstaId);
 
     @Modifying
     @Query("UPDATE LikeablePerson lp SET lp.attractiveTypeCode = :attractiveTypeCode, lp.modifyDate = NOW() WHERE lp.id = :id")
     void updateAttractiveTypeCode(@Param("attractiveTypeCode") int attractiveTypeCode,@Param("id") Long id);
+
+    List<LikeablePerson> findByToInstaMember_username(String toInstaMemberUsername);
+
+    LikeablePerson findByFromInstaMemberIdAndToInstaMember_username(long fromInstaMemberId, String toInstaMemberUsername);
 }

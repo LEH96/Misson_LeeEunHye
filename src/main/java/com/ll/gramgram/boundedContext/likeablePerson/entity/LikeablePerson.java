@@ -39,10 +39,6 @@ public class LikeablePerson {
     private int attractiveTypeCode; // 매력포인트(1=외모, 2=성격, 3=능력)
 
     public String getAttractiveTypeDisplayName() {
-        return switch (attractiveTypeCode) {
-            case 1 -> "외모";
-            case 2 -> "성격";
-            default -> "능력";
-        };
+        return LikeablePersonUtils.getAttractiveTypeDisplayName(attractiveTypeCode);
     }
 }
