@@ -2,16 +2,17 @@ package com.ll.gramgram.boundedContext.likeablePerson.service;
 
 import com.ll.gramgram.base.appConfig.AppConfig;
 import com.ll.gramgram.base.rsData.RsData;
+import com.ll.gramgram.boundedContext.instaMember.entity.InstaMember;
 import com.ll.gramgram.boundedContext.instaMember.service.InstaMemberService;
+import com.ll.gramgram.boundedContext.likeablePerson.entity.LikeablePerson;
 import com.ll.gramgram.boundedContext.likeablePerson.entity.LikeablePersonUtils;
 import com.ll.gramgram.boundedContext.likeablePerson.repository.LikeablePersonRepository;
-import com.ll.gramgram.boundedContext.instaMember.entity.InstaMember;
-import com.ll.gramgram.boundedContext.likeablePerson.entity.LikeablePerson;
 import com.ll.gramgram.boundedContext.member.entity.Member;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -26,15 +27,21 @@ public class LikeablePersonService {
     @Transactional
     public RsData<LikeablePerson> like(Member member, String username, int attractiveTypeCode) {
 
+        //예외 처리 케이스를 확인하고 결과를 받아옴
+        RsData<LikeablePerson> canCreateRsData = tryCreateLikeablePerson(member, username, attractiveTypeCode);
+
+        //실패의 경우 해당 결과 메세지를 반환해준다
+        if (canCreateRsData.isFail())
+            return canCreateRsData;
+
+        //등록하려는 호감표시의 호감타입코드를 다르게 수정하려고 하는 경우
+        if(canCreateRsData.getResultCode().equals("S-2")) {
+            modifyAttractiveTypeCode(member, username, attractiveTypeCode);
+            return canCreateRsData;
+        }
+
         InstaMember fromInstaMember = member.getInstaMember();
         InstaMember toInstaMember = instaMemberService.findByUsernameOrCreate(username).getData();
-
-        //예외 처리 케이스를 확인하고 결과를 받아옴
-        RsData<LikeablePerson> tryCreateRsData = tryCreateLikeablePerson(member, username, attractiveTypeCode);
-
-        //실패했거나 수정인 경우 해당 결과 메세지를 반환해준다
-        if(tryCreateRsData.isFail() || tryCreateRsData.getResultCode().equals("S-2"))
-            return tryCreateRsData;
 
         //성공한 경우 호감 표시 등록
         LikeablePerson likeablePerson = LikeablePerson
@@ -55,6 +62,30 @@ public class LikeablePersonService {
         return RsData.of("S-1", "입력하신 인스타유저(%s)를 호감상대로 등록되었습니다.".formatted(username), likeablePerson);
     }
 
+    @Transactional
+    public RsData<LikeablePerson> delete(Member member, Long id) {
+        //호감 데이터의 id로 LikeablePerson 객체를 가져옴
+        Optional<LikeablePerson> olp = likeablePersonRepository.findById(id);
+
+        //없는 데이터를 삭제하려는 경우
+        if (olp.isEmpty()) {
+            return RsData.of("F-1", "잘못된 삭제 입니다.");
+        }
+
+        LikeablePerson likeablePerson = olp.get();
+        long actorInstaMemberId = member.getInstaMember().getId();
+        long fromInstaMemberId = likeablePerson.getFromInstaMember().getId();
+
+        //로그인된 사용자의 이름과 호감표시 데이터의 from 사용자(등록자)의 이름이 다른경우 권한없음 결과 반환
+        if (actorInstaMemberId != fromInstaMemberId) {
+            return RsData.of("F-2", "삭제 권한이 없습니다.");
+        }
+
+        //권한이 확인되면 데이터를 삭제해주고 성공 결과 반환
+        likeablePersonRepository.delete(likeablePerson);
+        return RsData.of("S-1", "%s님에 대한 호감을 삭제하였습니다.".formatted(likeablePerson.getToInstaMemberUsername()));
+    }
+
     private RsData<LikeablePerson> tryCreateLikeablePerson(Member member, String username, int newAttractiveTypeCode) {
         //인스타그램 아이디가 연결되었는지 확인
         if (!member.hasConnectedInstaMember()) {
@@ -66,61 +97,41 @@ public class LikeablePersonService {
             return RsData.of("F-2", "본인을 호감상대로 등록할 수 없습니다.");
         }
 
-        InstaMember fromInstaMember = member.getInstaMember();
-        InstaMember toInstaMember = instaMemberService.findByUsernameOrCreate(username).getData();
-
-        //호감 표시를 등록한 사람과 받은 사람의 아이디가 둘 다 같은 데이터가 존재하는지 확인
-        Optional<LikeablePerson> sameLikeablePersonExists = likeablePersonRepository.findByFromInstaMember_IdAndToInstaMember_Id(fromInstaMember.getId(), toInstaMember.getId());
+        Optional<LikeablePerson> optionalLikeable = sameLikeablePersonExists(member, username);
 
         //같은 데이터가 존재하는 경우
-        if (sameLikeablePersonExists.isPresent()) {
-            LikeablePerson likeablePerson = sameLikeablePersonExists.get();
+        if (optionalLikeable.isPresent()) {
+            LikeablePerson likeablePerson = optionalLikeable.get();
             int oldAttractiveTypeCode = likeablePerson.getAttractiveTypeCode();
 
             //등록하려는 호감표시의 호감타입코드도 같은 경우
-            if(oldAttractiveTypeCode == newAttractiveTypeCode)
-                return RsData.of("F-3","중복된 호감 표시를 등록할 수 없습니다.");
+            if (oldAttractiveTypeCode == newAttractiveTypeCode)
+                return RsData.of("F-3", "중복된 호감 표시를 등록할 수 없습니다.");
 
-            //등록하려는 호감표시의 호감타입코드를 다르게 수정하려고 하는 경우
-            likeablePersonRepository.modifyAttractiveTypeCode(newAttractiveTypeCode, likeablePerson.getId());
-            return RsData.of("S-2","%s의 호감 표시(%s -> %s)를 수정하였습니다.".formatted(username, getAttractionName(oldAttractiveTypeCode), getAttractionName(newAttractiveTypeCode)));
+            String oldAttractiveName = LikeablePersonUtils.getAttractiveTypeDisplayName(oldAttractiveTypeCode);
+            String newAttractiveName = LikeablePersonUtils.getAttractiveTypeDisplayName(newAttractiveTypeCode);
+            return RsData.of("S-2", "%s의 호감 표시(%s -> %s)를 수정하였습니다.".formatted(username, oldAttractiveName, newAttractiveName));
         }
 
         //11명 이상의 호감표시를 등록하려고 하는 경우
         if (member.getInstaMember().getFromLikeablePeople().size() >= maxlikeablePersonNums) {
-            return RsData.of("F-4","최대 호감 표시 수는 %d개 입니다.".formatted(maxlikeablePersonNums));
+            return RsData.of("F-4", "최대 호감 표시 수는 %d개 입니다.".formatted(maxlikeablePersonNums));
         }
 
         //정상적인 등록
         return RsData.of("S-1", "생성이 가능합니다.");
     }
 
-    @Transactional
-    public RsData<LikeablePerson> delete(Member member, Long id) {
-        //호감 데이터의 id로 LikeablePerson 객체를 가져옴
-        Optional<LikeablePerson> olp = likeablePersonRepository.findById(id);
-
-        //없는 데이터를 삭제하려는 경우
-        if(olp.isEmpty()){
-            return RsData.of("F-1","잘못된 삭제 입니다.");
-        }
-
-        LikeablePerson likeablePerson = olp.get();
-        long actorInstaMemberId = member.getInstaMember().getId();
-        long fromInstaMemberId = likeablePerson.getFromInstaMember().getId();
-
-        //로그인된 사용자의 이름과 호감표시 데이터의 from 사용자(등록자)의 이름이 다른경우 권한없음 결과 반환
-        if(actorInstaMemberId != fromInstaMemberId) {
-            return RsData.of("F-2","삭제 권한이 없습니다.");
-        }
-
-        //권한이 확인되면 데이터를 삭제해주고 성공 결과 반환
-        likeablePersonRepository.delete(likeablePerson);
-        return RsData.of("S-1","%s님에 대한 호감을 삭제하였습니다.".formatted(likeablePerson.getToInstaMemberUsername()));
+    private void modifyAttractiveTypeCode(Member member, String username, int newAttractiveTypeCode) {
+        Optional<LikeablePerson> optionalLikeable = sameLikeablePersonExists(member, username);
+        LikeablePerson likeablePerson = optionalLikeable.get();
+        likeablePersonRepository.modifyAttractiveTypeCode(newAttractiveTypeCode, likeablePerson.getId());
     }
 
-    public String getAttractionName(int attractiveTypeCode) {
-        return LikeablePersonUtils.getAttractiveTypeDisplayName(attractiveTypeCode);
+    private Optional<LikeablePerson> sameLikeablePersonExists(Member member, String username) {
+        Long fromInstaMemberId = member.getInstaMember().getId();
+        Long toInstaMemberId = instaMemberService.findByUsernameOrCreate(username).getData().getId();
+        return likeablePersonRepository.findByFromInstaMember_IdAndToInstaMember_Id(fromInstaMemberId, toInstaMemberId);
     }
 
     public Optional<LikeablePerson> findById(Long id) {

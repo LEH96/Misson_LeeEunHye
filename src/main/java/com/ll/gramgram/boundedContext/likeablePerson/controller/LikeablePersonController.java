@@ -62,12 +62,12 @@ public class LikeablePersonController {
     }
 
     @GetMapping("/delete/{id}")
-    public String delete(@PathVariable Long id){
+    public String delete(@PathVariable Long id) {
         //호감데이터 삭제 후 결과메세지를 RsData에 담는다
         RsData<LikeablePerson> deleteRsData = likeablePersonService.delete(rq.getMember(), id);
 
         //실패한 경우 실패 메시지 띄우기
-        if(deleteRsData.isFail()) {
+        if (deleteRsData.isFail()) {
             return rq.historyBack(deleteRsData);
         }
 

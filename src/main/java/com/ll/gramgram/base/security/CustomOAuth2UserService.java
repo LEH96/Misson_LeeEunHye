@@ -33,7 +33,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
         String oauthId = switch (providerTypeCode) {
             case "NAVER" -> ((Map<String, String>) oAuth2User.getAttribute("response")).get("id");
-            default ->  oAuth2User.getName();
+            default -> oAuth2User.getName();
         };
 
         String username = providerTypeCode + "__%s".formatted(oauthId);

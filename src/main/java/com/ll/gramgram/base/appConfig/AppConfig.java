@@ -8,8 +8,9 @@ import org.springframework.context.annotation.Configuration;
 public class AppConfig {
     @Getter
     public static long likeablePersonFromMax;
+
     @Value("${custom.likeablePerson.from.max}")
-    public void setLikeablePersonFromMax(long likeablePersonFromMax){
+    public void setLikeablePersonFromMax(long likeablePersonFromMax) {
         AppConfig.likeablePersonFromMax = likeablePersonFromMax;
     }
 }

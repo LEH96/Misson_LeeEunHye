@@ -1,9 +1,9 @@
 package com.ll.gramgram.boundedContext.instaMember.controller;
 
-import com.ll.gramgram.base.rsData.RsData;
-import com.ll.gramgram.boundedContext.instaMember.service.InstaMemberService;
 import com.ll.gramgram.base.rq.Rq;
+import com.ll.gramgram.base.rsData.RsData;
 import com.ll.gramgram.boundedContext.instaMember.entity.InstaMember;
+import com.ll.gramgram.boundedContext.instaMember.service.InstaMemberService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -46,7 +46,7 @@ public class InstaMemberController {
     public String connect(@Valid ConnectForm connectForm) {
         RsData<InstaMember> rsData = instaMemberService.connect(rq.getMember(), connectForm.getUsername(), connectForm.getGender());
 
-        if ( rsData.isFail() ) {
+        if (rsData.isFail()) {
             return rq.historyBack(rsData);
         }
 
