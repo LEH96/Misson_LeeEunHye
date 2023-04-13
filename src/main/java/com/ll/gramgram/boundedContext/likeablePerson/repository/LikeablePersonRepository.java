@@ -17,7 +17,7 @@ public interface LikeablePersonRepository extends JpaRepository<LikeablePerson, 
 
     @Modifying
     @Query("UPDATE LikeablePerson lp SET lp.attractiveTypeCode = :attractiveTypeCode, lp.modifyDate = NOW() WHERE lp.id = :id")
-    void updateAttractiveTypeCode(@Param("attractiveTypeCode") int attractiveTypeCode,@Param("id") Long id);
+    void modifyAttractiveTypeCode(@Param("attractiveTypeCode") int attractiveTypeCode, @Param("id") Long id);
 
     List<LikeablePerson> findByToInstaMember_username(String toInstaMemberUsername);
 

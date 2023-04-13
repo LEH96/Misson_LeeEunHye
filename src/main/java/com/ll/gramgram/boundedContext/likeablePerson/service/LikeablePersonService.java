@@ -21,6 +21,8 @@ public class LikeablePersonService {
     private final LikeablePersonRepository likeablePersonRepository;
     private final InstaMemberService instaMemberService;
 
+    private final long maxlikeablePersonNums = AppConfig.getLikeablePersonFromMax();
+
     @Transactional
     public RsData<LikeablePerson> like(Member member, String username, int attractiveTypeCode) {
 
@@ -80,13 +82,13 @@ public class LikeablePersonService {
                 return RsData.of("F-3","중복된 호감 표시를 등록할 수 없습니다.");
 
             //등록하려는 호감표시의 호감타입코드를 다르게 수정하려고 하는 경우
-            likeablePersonRepository.updateAttractiveTypeCode(newAttractiveTypeCode, likeablePerson.getId());
+            likeablePersonRepository.modifyAttractiveTypeCode(newAttractiveTypeCode, likeablePerson.getId());
             return RsData.of("S-2","%s의 호감 표시(%s -> %s)를 수정하였습니다.".formatted(username, getAttractionName(oldAttractiveTypeCode), getAttractionName(newAttractiveTypeCode)));
         }
 
         //11명 이상의 호감표시를 등록하려고 하는 경우
-        if (member.getInstaMember().getFromLikeablePeople().size() == AppConfig.getLikeablePersonFromMax()) {
-            return RsData.of("F-4","11명 이상의 호감을 생성할 수는 없습니다.");
+        if (member.getInstaMember().getFromLikeablePeople().size() >= maxlikeablePersonNums) {
+            return RsData.of("F-4","최대 호감 표시 수는 %d개 입니다.".formatted(maxlikeablePersonNums));
         }
 
         //정상적인 등록
