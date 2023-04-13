@@ -28,16 +28,16 @@ public class LikeablePersonService {
     public RsData<LikeablePerson> like(Member member, String username, int attractiveTypeCode) {
 
         //예외 처리 케이스를 확인하고 결과를 받아옴
-        RsData<LikeablePerson> canCreateRsData = tryCreateLikeablePerson(member, username, attractiveTypeCode);
+        RsData<LikeablePerson> tryCreateRsData = tryCreateLikeablePerson(member, username, attractiveTypeCode);
 
         //실패의 경우 해당 결과 메세지를 반환해준다
-        if (canCreateRsData.isFail())
-            return canCreateRsData;
+        if (tryCreateRsData.isFail())
+            return tryCreateRsData;
 
         //등록하려는 호감표시의 호감타입코드를 다르게 수정하려고 하는 경우
-        if(canCreateRsData.getResultCode().equals("S-2")) {
+        if(tryCreateRsData.getResultCode().equals("S-2")) {
             modifyAttractiveTypeCode(member, username, attractiveTypeCode);
-            return canCreateRsData;
+            return tryCreateRsData;
         }
 
         InstaMember fromInstaMember = member.getInstaMember();
@@ -131,6 +131,7 @@ public class LikeablePersonService {
     private Optional<LikeablePerson> sameLikeablePersonExists(Member member, String username) {
         Long fromInstaMemberId = member.getInstaMember().getId();
         Long toInstaMemberId = instaMemberService.findByUsernameOrCreate(username).getData().getId();
+
         return likeablePersonRepository.findByFromInstaMember_IdAndToInstaMember_Id(fromInstaMemberId, toInstaMemberId);
     }
 
