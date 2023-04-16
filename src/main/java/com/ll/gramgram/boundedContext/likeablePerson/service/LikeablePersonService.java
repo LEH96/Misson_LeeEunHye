@@ -12,7 +12,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -37,7 +36,7 @@ public class LikeablePersonService {
         //등록하려는 호감표시의 호감타입코드를 다르게 수정하려고 하는 경우
         if(tryCreateRsData.getResultCode().equals("S-2")) {
             modifyAttractiveTypeCode(member, username, attractiveTypeCode);
-            return tryCreateRsData;
+            return RsData.of("S-2", "%s의 호감 표시를 수정하였습니다.".formatted(username));
         }
 
         InstaMember fromInstaMember = member.getInstaMember();
@@ -97,7 +96,7 @@ public class LikeablePersonService {
             return RsData.of("F-2", "본인을 호감상대로 등록할 수 없습니다.");
         }
 
-        Optional<LikeablePerson> optionalLikeable = sameLikeablePersonExists(member, username);
+        Optional<LikeablePerson> optionalLikeable = existSameLikeablePerson(member, username);
 
         //같은 데이터가 존재하는 경우
         if (optionalLikeable.isPresent()) {
@@ -108,9 +107,7 @@ public class LikeablePersonService {
             if (oldAttractiveTypeCode == newAttractiveTypeCode)
                 return RsData.of("F-3", "중복된 호감 표시를 등록할 수 없습니다.");
 
-            String oldAttractiveName = LikeablePersonUtils.getAttractiveTypeDisplayName(oldAttractiveTypeCode);
-            String newAttractiveName = LikeablePersonUtils.getAttractiveTypeDisplayName(newAttractiveTypeCode);
-            return RsData.of("S-2", "%s의 호감 표시(%s -> %s)를 수정하였습니다.".formatted(username, oldAttractiveName, newAttractiveName));
+            return RsData.of("S-2", "수정이 가능합니다.");
         }
 
         //11명 이상의 호감표시를 등록하려고 하는 경우
@@ -123,12 +120,12 @@ public class LikeablePersonService {
     }
 
     private void modifyAttractiveTypeCode(Member member, String username, int newAttractiveTypeCode) {
-        Optional<LikeablePerson> optionalLikeable = sameLikeablePersonExists(member, username);
+        Optional<LikeablePerson> optionalLikeable = existSameLikeablePerson(member, username);
         LikeablePerson likeablePerson = optionalLikeable.get();
-        likeablePersonRepository.modifyAttractiveTypeCode(newAttractiveTypeCode, likeablePerson.getId());
+        likeablePerson.setAttractiveTypeCode(newAttractiveTypeCode);
     }
 
-    private Optional<LikeablePerson> sameLikeablePersonExists(Member member, String username) {
+    private Optional<LikeablePerson> existSameLikeablePerson(Member member, String username) {
         Long fromInstaMemberId = member.getInstaMember().getId();
         Long toInstaMemberId = instaMemberService.findByUsernameOrCreate(username).getData().getId();
 

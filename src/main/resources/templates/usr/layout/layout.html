@@ -33,7 +33,7 @@
 <script src="https://cdn.tailwindcss.com"></script>
 
 <!-- 공통 상단 -->
-<header class="sticky top-0">
+<header class="sticky top-0 z-20">
     <div class="navbar max-w-2xl mx-auto bg-base-100">
         <div class="navbar-start">
             <div class="dropdown">
@@ -85,7 +85,7 @@
     </div>
 </header>
 
-<main layout:fragment="main" class="flex max-w-2xl mx-auto min-h-screen flex-col"></main>
+<main layout:fragment="main" class="flex max-w-2xl mx-auto min-h-screen flex-col z-10"></main>
 
 <script th:inline="javascript">
     // 타임리프 문법(파라미터, ? 뒤에 입력된 매개변수들)

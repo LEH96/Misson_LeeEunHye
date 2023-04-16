@@ -5,6 +5,7 @@ import com.ll.gramgram.boundedContext.instaMember.entity.InstaMember;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
+import org.hibernate.annotations.DynamicUpdate;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
@@ -18,6 +19,7 @@ import static jakarta.persistence.GenerationType.IDENTITY;
 @AllArgsConstructor
 @ToString(callSuper = true)
 @Entity
+@DynamicUpdate
 @Getter
 @Setter
 public class LikeablePerson extends BaseEntity {

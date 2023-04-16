@@ -16,18 +16,39 @@
     </th:block>
 
     <th:block th:if="${@rq.member.hasConnectedInstaMember}">
-        <span class="block"
-              th:text="|내가 호감을 표시한 사람의 수 : ${#lists.size(@rq.member.instaMember.fromLikeablePeople)}|"></span>
-        <span class="block"
-              th:text="|나를 호감을 표시한 사람의 수 : ${#lists.size(@rq.member.instaMember.toLikeablePeople)}|"></span>
-        <ul>
-            <li th:each="likeablePerson: ${likeablePeople}">
-                <span class="toInstaMember_username" th:text="${likeablePerson.toInstaMember.username}"></span>
-                <span class="toInstaMember_attractiveTypeDisplayName"
-                      th:text="${likeablePerson.attractiveTypeDisplayName}"></span>
-                <a th:href="@{|delete/${likeablePerson.id}|}" onclick="return confirm('정말로 삭제하시겠습니까?');">삭제</a>
-            </li>
-        </ul>
+        <div class="tabs mt-10 ml-10">
+            <a class="tab tab-bordered tab-active"
+               th:text="|등록한 호감(${#lists.size(@rq.member.instaMember.fromLikeablePeople)})|"></a>
+            <a class="tab tab-bordered"
+               th:text="|받은 호감(${#lists.size(@rq.member.instaMember.toLikeablePeople)})|"></a>
+        </div>
+
+        <div class="overflow-x-auto px-10">
+            <table class="table w-full">
+                <!-- head -->
+                <thead>
+                <tr>
+                    <th>인스타 아이디</th>
+                    <th>호감 타입</th>
+                    <th>삭제</th>
+                </tr>
+                </thead>
+                <tbody>
+                <!-- row -->
+                <tr th:each="likeablePerson: ${likeablePeople}">
+                    <td class="toInstaMember_username" th:text="${likeablePerson.toInstaMember.username}"></td>
+                    <td class="toInstaMember_attractiveTypeDisplayName"
+                        th:text="${likeablePerson.attractiveTypeDisplayName}"></td>
+                    <td>
+                        <a href="javascript:;" onclick="if(confirm('정말로 삭제하시겠습니까?')) return $(this).next().submit();">
+                            <i class="fa-solid fa-x"></i>
+                        </a>
+                        <form hidden th:action="@{|delete/${likeablePerson.id}|}" method="post"></form>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
     </th:block>
 </main>
 </body>

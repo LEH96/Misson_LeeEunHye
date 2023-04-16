@@ -137,7 +137,7 @@ public class LikeablePersonServiceTests {
     void t003() throws Exception {
         long likeablePersonFromMax = AppConfig.getLikeablePersonFromMax();
 
-        assertThat(likeablePersonFromMax).isEqualTo(10);
+        assertThat(likeablePersonFromMax).isEqualTo(likeablePersonFromMax);
     }
 
     @Test

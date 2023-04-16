@@ -25,16 +25,16 @@ public class LikeablePersonController {
     private final Rq rq;
     private final LikeablePersonService likeablePersonService;
 
-    @GetMapping("/add")
-    public String showAdd() {
-        return "usr/likeablePerson/add";
-    }
-
     @AllArgsConstructor
     @Getter
     public static class AddForm {
         private final String username;
         private final int attractiveTypeCode;
+    }
+
+    @GetMapping("/add")
+    public String showAdd() {
+        return "usr/likeablePerson/add";
     }
 
     @PostMapping("/add")
@@ -61,7 +61,7 @@ public class LikeablePersonController {
         return "usr/likeablePerson/list";
     }
 
-    @GetMapping("/delete/{id}")
+    @PostMapping("/delete/{id}")
     public String delete(@PathVariable Long id) {
         //호감데이터 삭제 후 결과메세지를 RsData에 담는다
         RsData<LikeablePerson> deleteRsData = likeablePersonService.delete(rq.getMember(), id);

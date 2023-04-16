@@ -1,6 +1,12 @@
 package com.ll.gramgram.boundedContext.likeablePerson.controller;
 
 
+import com.ll.gramgram.base.appConfig.AppConfig;
+import com.ll.gramgram.boundedContext.likeablePerson.entity.LikeablePerson;
+import static org.assertj.core.api.Assertions.assertThat;
+import com.ll.gramgram.boundedContext.likeablePerson.service.LikeablePersonService;
+import com.ll.gramgram.boundedContext.member.entity.Member;
+import com.ll.gramgram.boundedContext.member.service.MemberService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +17,8 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Optional;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
@@ -26,6 +34,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class LikeablePersonControllerTests {
     @Autowired
     private MockMvc mvc;
+    @Autowired
+    private LikeablePersonService likeablePersonService;
+    @Autowired
+    private MemberService memberService;
 
     @Test
     @DisplayName("등록 폼(인스타 인증을 안해서 폼 대신 메세지)")
@@ -172,8 +184,14 @@ public class LikeablePersonControllerTests {
 
     @Test
     @DisplayName("호감 추가 - 예외 처리 케이스 5. 11명 이상 등록하려는 경우")
-    @WithUserDetails("user3")
+    @WithUserDetails("user4")
     void t007() throws Exception {
+        Member testmember = memberService.findByUsername("user4").get();
+
+        for(int i = 0 ; i < AppConfig.getLikeablePersonFromMax() ; i++) {
+            likeablePersonService.like(testmember ,"insta_user"+i , 1);
+        }
+
         // WHEN
         ResultActions resultActions = mvc
                 .perform(post("/likeablePerson/add")

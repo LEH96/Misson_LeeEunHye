@@ -7,10 +7,16 @@
 <body>
 
 <main layout:fragment="main">
-    <div>번호 : <span th:text="${@rq.member.id}"></span></div>
-    <div>이름 : <span th:text="${@rq.member.username}"></span></div>
-    <div>가입날짜 : <span th:text="${#temporals.format(@rq.member.createDate, 'yyyy-MM-dd HH:mm')}"></span></div>
-    <div>수정날짜 : <span th:text="${#temporals.format(@rq.member.modifyDate, 'yyyy-MM-dd HH:mm')}"></span></div>
+    <div class="stats shadow w-3/4 place-self-center mt-10">
+        <div class="stat bg-base-100 m-5 place-self-center">
+            <div class="font-bold text-xl p-1">계정 정보</div>
+            <div class="border-t p-1"></div>
+            <div>번호 : <span th:text="${@rq.member.id}"></span></div>
+            <div>이름 : <span th:text="${@rq.member.username}"></span></div>
+            <div>가입날짜 : <span th:text="${#temporals.format(@rq.member.createDate, 'yyyy-MM-dd HH:mm')}"></span></div>
+            <div>수정날짜 : <span th:text="${#temporals.format(@rq.member.modifyDate, 'yyyy-MM-dd HH:mm')}"></span></div>
+        </div>
+    </div>
 </main>
 
 
