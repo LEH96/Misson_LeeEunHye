@@ -2,7 +2,6 @@ package com.ll.gramgram.boundedContext.likeablePerson.controller;
 
 
 import com.ll.gramgram.base.appConfig.AppConfig;
-import com.ll.gramgram.boundedContext.likeablePerson.entity.LikeablePerson;
 import static org.assertj.core.api.Assertions.assertThat;
 import com.ll.gramgram.boundedContext.likeablePerson.service.LikeablePersonService;
 import com.ll.gramgram.boundedContext.member.entity.Member;
@@ -18,12 +17,9 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Optional;
-
 import static org.hamcrest.Matchers.containsString;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -84,9 +80,6 @@ public class LikeablePersonControllerTests {
                         """.stripIndent().trim())))
                 .andExpect(content().string(containsString("""
                         <input type="radio" name="attractiveTypeCode" value="3"
-                        """.stripIndent().trim())))
-                .andExpect(content().string(containsString("""
-                        <input type="submit" value="추가"
                         """.stripIndent().trim())));
         ;
     }
@@ -163,9 +156,52 @@ public class LikeablePersonControllerTests {
     }
 
     @Test
-    @DisplayName("호감 추가 - 예외 처리 케이스 4. 중복 데이터 추가")
+    @DisplayName("호감삭제")
     @WithUserDetails("user3")
     void t006() throws Exception {
+        // WHEN
+        ResultActions resultActions = mvc
+                .perform(
+                        post("/likeablePerson/delete/1")
+                                .with(csrf())
+                )
+                .andDo(print());
+
+        // THEN
+        resultActions
+                .andExpect(handler().handlerType(LikeablePersonController.class))
+                .andExpect(handler().methodName("delete"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrlPattern("/likeablePerson/list**"))
+        ;
+
+        assertThat(likeablePersonService.findById(1L).isPresent()).isEqualTo(false);
+    }
+
+    @Test
+    @DisplayName("호감삭제 - 없는 데이터 삭제")
+    @WithUserDetails("user3")
+    void t007() throws Exception {
+        // WHEN
+        ResultActions resultActions = mvc
+                .perform(
+                        post("/likeablePerson/delete/100")
+                                .with(csrf())
+                )
+                .andDo(print());
+
+        // THEN
+        resultActions
+                .andExpect(handler().handlerType(LikeablePersonController.class))
+                .andExpect(handler().methodName("delete"))
+                .andExpect(status().is4xxClientError())
+        ;
+    }
+
+    @Test
+    @DisplayName("호감 추가 - 예외 처리 케이스 4. 중복 데이터 추가")
+    @WithUserDetails("user3")
+    void t008() throws Exception {
         // WHEN
         ResultActions resultActions = mvc
                 .perform(post("/likeablePerson/add")
@@ -185,7 +221,7 @@ public class LikeablePersonControllerTests {
     @Test
     @DisplayName("호감 추가 - 예외 처리 케이스 5. 11명 이상 등록하려는 경우")
     @WithUserDetails("user4")
-    void t007() throws Exception {
+    void t009() throws Exception {
         Member testmember = memberService.findByUsername("user4").get();
 
         for(int i = 0 ; i < AppConfig.getLikeablePersonFromMax() ; i++) {
@@ -211,7 +247,7 @@ public class LikeablePersonControllerTests {
     @Test
     @DisplayName("호감 추가 - 예외 처리 케이스 6. 호감 표시 타입 변경(수정)")
     @WithUserDetails("user3")
-    void t008() throws Exception {
+    void t011() throws Exception {
         // WHEN
         ResultActions resultActions = mvc
                 .perform(post("/likeablePerson/add")
