@@ -54,7 +54,7 @@
             }
         </script>
 
-        <div class="flex-grow flex items-center justify-center">
+        <div class="flex-grow flex items-center justify-center mt-40">
             <div class="max-w-2xl w-full px-10">
                 <h1 class="mb-4">
                     <i class="fa-solid fa-heart-circle-plus"></i>
@@ -64,18 +64,24 @@
                 <form th:action method="POST" class="flex flex-col gap-6"
                       onsubmit="AddForm__submit(this); return false;">
                     <div>
-                        당신의 인스타ID : <span class="badge" th:text="${@rq.member.instaMember.username}"></span>
+                        당신의 인스타ID : <span class="badge badge-secondary" th:text="${@rq.member.instaMember.username}"></span>
                     </div>
 
                     <div class="form-control">
-                        <input type="text" name="username" maxlength="30" placeholder="상대방의 인스타그램 아이디"
-                               class="input input-bordered">
+                        <input type="text" name="username" placeholder="상대방의 인스타그램 아이디" class="input input-bordered" autofocus
+                               onchange="$(this).keyup();"
+                               onkeyup="$(this).next().children(':last-child').text(this.value.trim());"
+                               onpaste="setTimeoutZero(() => $(this).keyup());"/>
+                        <a href="#" onclick="$(this).attr('href', $(this).text().replaceAll(' ', ''));" target="_blank"
+                           class="block mt-3 text-sm break-all underline text-blue-400">
+                            <span class="ml-3">https://instagram.com/</span><span class="text-red-300"></span>
+                        </a>
                     </div>
 
                     <div class="flex justify-center content-center gap-5">
                         <div class="form-control">
                             <label class="label cursor-pointer flex gap-1">
-                                <i class="fa-solid fa-spray-can-sparkles"></i>
+                                <i class="fa-solid fa-spray-can-sparkles" style="color: #99bbf5;"></i>
                                 <span class="label-text">외모</span>
                                 <input type="radio" name="attractiveTypeCode" value="1" class="radio focus:bg-red-100">
                             </label>
@@ -83,7 +89,7 @@
 
                         <div class="form-control">
                             <label class="label cursor-pointer flex gap-1">
-                                <i class="fa-solid fa-heart"></i>
+                                <i class="fa-solid fa-heart" style="color: #e74083;"></i>
                                 <span class="label-text">성격</span>
                                 <input type="radio" name="attractiveTypeCode" value="2" class="radio focus:bg-red-100">
                             </label>
@@ -91,14 +97,14 @@
 
                         <div class="form-control">
                             <label class="label cursor-pointer flex gap-1">
-                                <i class="fa-solid fa-gift"></i>
+                                <i class="fa-solid fa-gift" style="color: #ffb005;"></i>
                                 <span class="label-text">능력</span>
                                 <input type="radio" name="attractiveTypeCode" value="3" class="radio focus:bg-red-100">
                             </label>
                         </div>
                     </div>
 
-                    <button class="btn btn-block gap-2">
+                    <button class="btn btn-primary gap-2">
                         <i class="fa-solid fa-heart-circle-plus"></i>
                         <span>호감표시 추가</span>
                     </button>
