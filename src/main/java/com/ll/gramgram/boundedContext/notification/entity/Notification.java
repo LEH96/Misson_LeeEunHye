@@ -2,10 +2,12 @@ package com.ll.gramgram.boundedContext.notification.entity;
 
 import com.ll.gramgram.base.baseEntity.BaseEntity;
 import com.ll.gramgram.boundedContext.instaMember.entity.InstaMember;
+import com.ll.gramgram.standard.util.Ut;
 import jakarta.persistence.Entity;
 import jakarta.persistence.ManyToOne;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import lombok.ToString;
 import lombok.experimental.SuperBuilder;
 
@@ -17,6 +19,7 @@ import java.time.LocalDateTime;
 @SuperBuilder
 @ToString(callSuper = true)
 public class Notification extends BaseEntity {
+    @Setter
     private LocalDateTime readDate;
     @ManyToOne
     @ToString.Exclude
@@ -29,4 +32,24 @@ public class Notification extends BaseEntity {
     private int oldAttractiveTypeCode; // 해당사항 없으면 0
     private String newGender; // 해당사항 없으면 null
     private int newAttractiveTypeCode; // 해당사항 없으면 0
+
+    public String getAttractiveTypeDisplayName(int attractiveTypeCode) {
+        return switch (attractiveTypeCode) {
+            case 1 -> "외모";
+            case 2 -> "성격";
+            default -> "능력";
+        };
+    }
+
+    public String getAttractiveTypeDisplayNameWithIcon(int attractiveTypeCode) {
+        return switch (attractiveTypeCode) {
+            case 1 -> "<i class=\"fa-solid fa-person-rays\"></i>";
+            case 2 -> "<i class=\"fa-regular fa-face-smile\"></i>";
+            default -> "<i class=\"fa-solid fa-people-roof\"></i>";
+        } + "&nbsp;" + getAttractiveTypeDisplayName(attractiveTypeCode);
+    }
+
+    public String getJdenticon() {
+        return Ut.hash.sha256(fromInstaMember.getId() + "_likes_" + toInstaMember.getId());
+    }
 }

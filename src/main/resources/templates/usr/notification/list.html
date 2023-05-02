@@ -6,9 +6,9 @@
 
 <body>
 
-<main layout:fragment="main" class="flex-grow flex items-center justify-center">
+<main layout:fragment="main" class="flex-grow flex justify-center mt-10">
     <div class="max-w-2xl w-full px-4">
-        <h1 class="mb-4">
+        <h1 class="ml-8">
             <i class="fa-regular fa-bell"></i>
             알림
         </h1>
@@ -17,55 +17,75 @@
             <i class="fa-regular fa-face-laugh"></i> 최근에 받은 알림이 없습니다.
         </div>
 
-        <div class="card bg-base-100 shadow-xl flex mt-5"
-             th:each="likeablePerson, i: ${@rq.member.instaMember.toLikeablePeople}">
-            <div class="card-body">
-                <a href="#" class="card-title">
-                    <span th:text="|No. ${i.index + 1} / ${i.size}|"></span>
-                </a>
 
-                <div class="mt-4">
-                    <div>
-                        <i class="fa-regular fa-face-laugh-beam"></i> 호감표시자
-                    </div>
-                    <div class="mt-2">
-                        <svg th:data-jdenticon-value="|${likeablePerson.jdenticon}|" width="120" height="120"></svg>
-                    </div>
-                </div>
+        <div class="card bg-base-100 shadow-xl flex mt-3"
+                 th:if="${notification.readDate == null}"
+                 th:each="notification, i: ${notifications}"
+                 onclick="$(this).find('form').submit()">
 
-                <div class="mt-4">
-                    <div>
-                        <i class="fa-regular fa-clock"></i>
-                        호감표시
+                <div class="card-body rounded-lg hover:bg-slate-100 active:bg-slate-200">
+                    <a class="card-title">
+                        <span th:text="|No. ${i.index + 1} / ${i.size}|"></span>
+                    </a>
+
+                    <div class="mt-4">
+                        <div>
+                            <i class="fa-regular fa-face-laugh-beam"></i> 호감표시자
+                        </div>
+                        <div class="mt-2">
+                            <svg th:data-jdenticon-value="|${notification.jdenticon}|" width="120" height="120"></svg>
+                        </div>
                     </div>
-                    <div class="mt-2">
+
+                    <div class="mt-4">
+                        <div>
+                            <i class="fa-regular fa-clock"></i>
+                            호감표시
+                        </div>
+                        <div class="mt-2">
                             <span class="badge badge-primary"
-                                  th:text="${#temporals.format(likeablePerson.createDate, 'yy.MM.dd HH:mm')}"></span>
+                                  th:text="${#temporals.format(notification.createDate, 'yy.MM.dd HH:mm')}"></span>
+                        </div>
                     </div>
-                </div>
 
-                <div class="mt-4">
-                    <div>
-                        <i class="fa-solid fa-person-half-dress"></i> 성별
-                    </div>
-                    <div class="mt-2">
+                    <div class="mt-4">
+                        <div>
+                            <i class="fa-solid fa-person-half-dress"></i> 성별
+                        </div>
+                        <div class="mt-2">
                             <span class="badge badge-primary"
-                                  th:utext="${likeablePerson.fromInstaMember.genderDisplayNameWithIcon}"></span>
+                                  th:utext="${notification.fromInstaMember.genderDisplayNameWithIcon}"></span>
+                        </div>
                     </div>
-                </div>
 
-                <div class="mt-4">
-                    <div>
-                        <i class="fa-solid fa-check"></i>
-                        호감사유
-                    </div>
-                    <div class="mt-2">
+                    <div class="mt-4">
+                        <div>
+                            <i class="fa-solid fa-check"></i>
+                            호감사유
+                        </div>
+                        <div class="mt-2">
                             <span class="badge badge-primary"
-                                  th:utext="${likeablePerson.attractiveTypeDisplayNameWithIcon}"></span>
+                                  th:utext="${notification.getAttractiveTypeDisplayNameWithIcon(notification.newAttractiveTypeCode)}"
+                                  th:if="${notification.typeCode.equals('Like')}"></span>
+
+                            <span th:if="${notification.typeCode.equals('ModifyAttractiveType')}">
+                                <span class="badge badge-primary"
+                                      th:utext="${notification.getAttractiveTypeDisplayNameWithIcon(notification.oldAttractiveTypeCode)}">
+                                </span>
+                                이(가)
+                                <span class="badge badge-primary"
+                                      th:utext="${notification.getAttractiveTypeDisplayNameWithIcon(notification.newAttractiveTypeCode)}">
+                                </span>
+                                으로 변경 되었습니다.
+                            </span>
+                        </div>
                     </div>
                 </div>
-            </div>
+            <form hidden method="post" th:action="@{|/usr/notification/read/${notification.id}|}">
+                <input type="hidden" name="id" th:value="${notification.id}" />
+            </form>
         </div>
+
 
     </div>
 

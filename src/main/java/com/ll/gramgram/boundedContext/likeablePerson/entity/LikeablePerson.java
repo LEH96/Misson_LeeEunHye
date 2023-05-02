@@ -14,6 +14,7 @@ import lombok.experimental.SuperBuilder;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 
 @Entity
 @Getter
@@ -47,9 +48,11 @@ public class LikeablePerson extends BaseEntity {
         if(isModifyUnlocked())
             return "변경 가능";
 
-        long duration = Duration.between(now, modifyUnlockDate).getSeconds();
-        long remainHours = (long) Math.ceil(duration / (60.0 * 60));
-        long remainMinutes = (long) Math.ceil((duration % (60.0 * 60)) / 60);
+        long diff = ChronoUnit.SECONDS.between(now, modifyUnlockDate);
+        if(Math.floor(diff / (60.0 * 60)) == 0 && Math.floor((diff % (60.0 * 60)) / 60 ) == 0)
+            return "1분 후";
+        long remainHours = (long) Math.ceil(diff / (60.0 * 60));
+        long remainMinutes = (long) Math.ceil((diff % (60.0 * 60)) / 60);
         return remainHours + "시간 " + remainMinutes + "분 후";
     }
 
