@@ -24,60 +24,48 @@
                  onclick="$(this).find('form').submit()">
 
                 <div class="card-body rounded-lg hover:bg-slate-100 active:bg-slate-200">
-                    <a class="card-title">
-                        <span th:text="|No. ${i.index + 1} / ${i.size}|"></span>
-                    </a>
-
-                    <div class="mt-4">
-                        <div>
-                            <i class="fa-regular fa-face-laugh-beam"></i> 호감표시자
-                        </div>
-                        <div class="mt-2">
-                            <svg th:data-jdenticon-value="|${notification.jdenticon}|" width="120" height="120"></svg>
-                        </div>
+                    <div class="mt-1" th:if="${notification.typeCode.equals('Like')}">
+                        익명의 회원이 당신을 호감표시 하였습니다.
+                    </div>
+                    <div class="mt-1" th:if="${notification.typeCode.equals('ModifyAttractiveType')}">
+                        익명의 회원이 당신에 대한 호감 사유를 변경하였습니다.
                     </div>
 
-                    <div class="mt-4">
-                        <div>
-                            <i class="fa-regular fa-clock"></i>
-                            호감표시
-                        </div>
-                        <div class="mt-2">
-                            <span class="badge badge-primary"
-                                  th:text="${#temporals.format(notification.createDate, 'yy.MM.dd HH:mm')}"></span>
-                        </div>
-                    </div>
-
-                    <div class="mt-4">
+                    <div class="mt-1">
                         <div>
                             <i class="fa-solid fa-person-half-dress"></i> 성별
-                        </div>
-                        <div class="mt-2">
                             <span class="badge badge-primary"
                                   th:utext="${notification.fromInstaMember.genderDisplayNameWithIcon}"></span>
+
+                            <span class="ml-2" th:if="${notification.typeCode.equals('Like')}">
+                                <i class="fa-solid fa-check"></i>호감사유
+                                <span class="badge badge-primary"
+                                      th:utext="${notification.getAttractiveTypeDisplayNameWithIcon(notification.newAttractiveTypeCode)}"
+                                ></span>
+                            </span>
+
+                            <div class="mt-2" th:if="${notification.typeCode.equals('ModifyAttractiveType')}">
+                                <div>
+                                    <i class="fa-solid fa-check"></i>
+                                    호감사유
+                                </div>
+                                <div class="mt-1">
+                                    <span class="badge badge-primary"
+                                      th:utext="${notification.getAttractiveTypeDisplayNameWithIcon(notification.oldAttractiveTypeCode)}">
+                                    </span>
+                                    이(가)
+                                    <span class="badge badge-primary"
+                                          th:utext="${notification.getAttractiveTypeDisplayNameWithIcon(notification.newAttractiveTypeCode)}">
+                                    </span>
+                                    으로 변경 되었습니다.
+                                </div>
+                            </div>
                         </div>
                     </div>
 
-                    <div class="mt-4">
-                        <div>
-                            <i class="fa-solid fa-check"></i>
-                            호감사유
-                        </div>
-                        <div class="mt-2">
-                            <span class="badge badge-primary"
-                                  th:utext="${notification.getAttractiveTypeDisplayNameWithIcon(notification.newAttractiveTypeCode)}"
-                                  th:if="${notification.typeCode.equals('Like')}"></span>
-
-                            <span th:if="${notification.typeCode.equals('ModifyAttractiveType')}">
-                                <span class="badge badge-primary"
-                                      th:utext="${notification.getAttractiveTypeDisplayNameWithIcon(notification.oldAttractiveTypeCode)}">
-                                </span>
-                                이(가)
-                                <span class="badge badge-primary"
-                                      th:utext="${notification.getAttractiveTypeDisplayNameWithIcon(notification.newAttractiveTypeCode)}">
-                                </span>
-                                으로 변경 되었습니다.
-                            </span>
+                    <div class="mt-2 flex justify-end">
+                        <div class="badge badge-ghost"
+                            th:text="${#temporals.format(notification.createDate, 'yy.MM.dd HH:mm')}">
                         </div>
                     </div>
                 </div>

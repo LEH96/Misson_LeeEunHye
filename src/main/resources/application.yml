@@ -73,6 +73,6 @@ logging:
     org.hibernate.orm.jdbc.extract: TRACE
 custom:
   likeablePerson:
-    modifyCoolTime: '#{10}'
+    modifyCoolTime: '#{5}'
     from:
       max: 10
