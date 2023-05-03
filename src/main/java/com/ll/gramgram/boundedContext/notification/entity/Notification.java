@@ -3,10 +3,12 @@ package com.ll.gramgram.boundedContext.notification.entity;
 import com.ll.gramgram.base.baseEntity.BaseEntity;
 import com.ll.gramgram.boundedContext.instaMember.entity.InstaMember;
 import com.ll.gramgram.standard.util.Ut;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.ManyToOne;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+
 import lombok.Setter;
 import lombok.ToString;
 import lombok.experimental.SuperBuilder;
