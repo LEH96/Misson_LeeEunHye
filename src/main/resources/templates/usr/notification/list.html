@@ -17,7 +17,6 @@
             <i class="fa-regular fa-face-laugh"></i> 최근에 받은 알림이 없습니다.
         </div>
 
-
         <div class="card bg-base-100 shadow-xl flex mt-3"
                  th:if="${notification.readDate == null}"
                  th:each="notification, i: ${notifications}"
@@ -73,8 +72,6 @@
                 <input type="hidden" name="id" th:value="${notification.id}" />
             </form>
         </div>
-
-
     </div>
 
 </main>

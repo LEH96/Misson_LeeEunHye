@@ -104,7 +104,7 @@ public class InstaMemberService {
         InstaMemberSnapshot snapshot = toInstaMember.snapshot("ModifyAttractiveType");
 
         saveSnapshot(snapshot);
-
+        
         // 알림
         Notification notification = Notification.builder()
                                                 .toInstaMember(toInstaMember)

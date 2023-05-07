@@ -34,6 +34,7 @@ public class NotificationController {
                                             .stream()
                                             .filter(notification -> notification.getReadDate() == null)
                                             .sorted(Comparator.comparing(Notification::getId).reversed()).collect(Collectors.toList());
+
         model.addAttribute("notifications", notifications);
 
         return "usr/notification/list";
