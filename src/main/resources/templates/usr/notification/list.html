@@ -6,9 +6,9 @@
 
 <body>
 
-<main layout:fragment="main" class="flex-grow flex items-center justify-center">
+<main layout:fragment="main" class="flex-grow flex justify-center mt-10">
     <div class="max-w-2xl w-full px-4">
-        <h1 class="mb-4">
+        <h1 class="ml-8">
             <i class="fa-regular fa-bell"></i>
             알림
         </h1>
@@ -17,56 +17,60 @@
             <i class="fa-regular fa-face-laugh"></i> 최근에 받은 알림이 없습니다.
         </div>
 
-        <div class="flex flex-col gap-4">
-            <div class="card bg-base-100 shadow-xl">
-                <div class="card-body">
-                    <div class="flex flex-col gap-2">
-                        <div>
-                            <i class="fa-regular fa-clock"></i>
-                            알림
-                        </div>
-                        <div>
-                            <span class="badge badge-primary">23.04.27 12:12, 3분 전</span>
-                            <i class="fa-solid fa-fire text-red-500"></i>
-                        </div>
-                    </div>
-                    <div class="mt-4 flex flex-col gap-2">
-                        <div>
-                            <i class="fa-regular fa-message"></i>
-                            내용
-                        </div>
-                        <div>
-                            어떤 <span class="badge badge-primary">여자</span>가 당신을 <span
-                                class="badge badge-primary">외모</span> 때문에 좋아합니다.
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <div class="card bg-base-100 shadow-xl flex mt-3"
+                 th:if="${notification.readDate == null}"
+                 th:each="notification, i: ${notifications}"
+                 onclick="$(this).find('form').submit()">
 
-            <div class="card bg-base-100 shadow-xl">
-                <div class="card-body">
-                    <div class="flex flex-col gap-2">
+                <div class="card-body rounded-lg hover:bg-slate-100 active:bg-slate-200">
+                    <div class="mt-1" th:if="${notification.typeCode.equals('Like')}">
+                        익명의 회원이 당신을 호감표시 하였습니다.
+                    </div>
+                    <div class="mt-1" th:if="${notification.typeCode.equals('ModifyAttractiveType')}">
+                        익명의 회원이 당신에 대한 호감 사유를 변경하였습니다.
+                    </div>
+
+                    <div class="mt-1">
                         <div>
-                            <i class="fa-regular fa-clock"></i>
-                            알림
-                        </div>
-                        <div>
-                            <span class="badge badge-primary">23.04.27 12:12, 1시간 전</span>
+                            <i class="fa-solid fa-person-half-dress"></i> 성별
+                            <span class="badge badge-primary"
+                                  th:utext="${notification.fromInstaMember.genderDisplayNameWithIcon}"></span>
+
+                            <span class="ml-2" th:if="${notification.typeCode.equals('Like')}">
+                                <i class="fa-solid fa-check"></i>호감사유
+                                <span class="badge badge-primary"
+                                      th:utext="${notification.getAttractiveTypeDisplayNameWithIcon(notification.newAttractiveTypeCode)}"
+                                ></span>
+                            </span>
+
+                            <div class="mt-2" th:if="${notification.typeCode.equals('ModifyAttractiveType')}">
+                                <div>
+                                    <i class="fa-solid fa-check"></i>
+                                    호감사유
+                                </div>
+                                <div class="mt-1">
+                                    <span class="badge badge-primary"
+                                      th:utext="${notification.getAttractiveTypeDisplayNameWithIcon(notification.oldAttractiveTypeCode)}">
+                                    </span>
+                                    이(가)
+                                    <span class="badge badge-primary"
+                                          th:utext="${notification.getAttractiveTypeDisplayNameWithIcon(notification.newAttractiveTypeCode)}">
+                                    </span>
+                                    으로 변경 되었습니다.
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    <div class="mt-4 flex flex-col gap-2">
-                        <div>
-                            <i class="fa-regular fa-message"></i>
-                            내용
-                        </div>
-                        <div>
-                            어떤 <span class="badge badge-primary">여자</span>가 당신에 대한 호감사유를 <span
-                                class="badge badge-primary">외모</span>에서 <span class="badge badge-primary">성격</span>으로
-                            변경했습니다.
+
+                    <div class="mt-2 flex justify-end">
+                        <div class="badge badge-ghost"
+                            th:text="${#temporals.format(notification.createDate, 'yy.MM.dd HH:mm')}">
                         </div>
                     </div>
                 </div>
-            </div>
+            <form hidden method="post" th:action="@{|/usr/notification/read/${notification.id}|}">
+                <input type="hidden" name="id" th:value="${notification.id}" />
+            </form>
         </div>
     </div>
 
