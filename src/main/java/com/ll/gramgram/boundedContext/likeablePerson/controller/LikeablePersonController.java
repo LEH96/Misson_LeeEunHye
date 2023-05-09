@@ -133,56 +133,41 @@ public class LikeablePersonController {
         if (instaMember != null) {
             // 해당 인스타회원이 좋아하는 사람들 목록
             List<LikeablePerson> likeablePeople = instaMember.getToLikeablePeople();
-            Stream<LikeablePerson> likeablePeopleStream = likeablePeople.stream();
 
             if(gender != null && !Objects.equals(gender,"")) {
-                likeablePeopleStream = likeablePeopleStream.filter(
-                        lp -> lp.getFromInstaMember().getGender().equals(gender)
-                );
+                likeablePeople =
+                        likeablePersonService.findQslByToInstaMemberAndGender(likeablePeople, gender);
             }
 
             if(attractiveTypeCode != null && !attractiveTypeCode.isEmpty()){
-                likeablePeopleStream = likeablePeopleStream.filter(
-                        lp -> lp.getAttractiveTypeCode() == Integer.parseInt(attractiveTypeCode)
-                );
+                likeablePeople =
+                        likeablePersonService.findQslByToInstaMemberAndAttractiveTypeCode(likeablePeople, Integer.parseInt(attractiveTypeCode));
             }
 
             switch (sortCode) {
                 case 1: //최신순(기본)
                     break;
                 case 2: //날짜가 오래된 순
-                    likeablePeopleStream = likeablePeopleStream.sorted(
-                            Comparator.comparing(LikeablePerson::getCreateDate)
-                    );
+                    likeablePeople = likeablePersonService.sortQslByOldCreateDate(likeablePeople);
                     break;
                 case 3: //인기가 많은 사람 순
-                    likeablePeopleStream = likeablePeopleStream.sorted(
-                            Comparator.comparingLong((LikeablePerson lp) -> lp.getFromInstaMember().getLikes())
-                    );
+                    likeablePeople = likeablePersonService.sortQslByMorePopularFromInstaMember(likeablePeople);
                     break;
                 case 4: //인기가 적은 사람 순
-                    likeablePeopleStream = likeablePeopleStream.sorted(
-                            Comparator.comparingLong((LikeablePerson lp) -> lp.getFromInstaMember().getLikes())
-                                    .reversed()
-                    );
+                    likeablePeople = likeablePersonService.sortQslByLessPopularFromInstaMember(likeablePeople);
                     break;
                 case 5: //1. 성별 순(여성 -> 남성 순) 2. 최신순
-                    likeablePeopleStream = likeablePeopleStream.sorted(
-                            Comparator.comparing((LikeablePerson lp) -> lp.getFromInstaMember().getGender())
-                                    .reversed()
-                    );
+                    likeablePeople = likeablePersonService.sortQslByGender(likeablePeople);
                     break;
                 case 6: //1. 호감사유순(외모 -> 성격 순) 2. 최신순
-                    likeablePeopleStream = likeablePeopleStream.sorted(
-                            Comparator.comparingInt(LikeablePerson::getAttractiveTypeCode)
-                    );
+                    likeablePeople = likeablePersonService.sortQslByAttractiveType(likeablePeople);
                     break;
             }
 
-            likeablePeople = likeablePeopleStream.collect(Collectors.toList());
             model.addAttribute("likeablePeople", likeablePeople);
         }
 
         return "usr/likeablePerson/toList";
     }
 }
+

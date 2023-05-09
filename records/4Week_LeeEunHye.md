@@ -203,3 +203,128 @@ java.lang.NumberFormatException: For input string: ""
         return "usr/likeablePerson/toList";
     }
 ```
+
+2. 추가작업: QueryDSL 이용
+
+- LikeablePersonController
+```java
+    @PreAuthorize("isAuthenticated()")
+    @GetMapping("/toList")
+    public String showToList(Model model, String gender, String attractiveTypeCode, @RequestParam(defaultValue = "1") int sortCode) {
+        InstaMember instaMember = rq.getMember().getInstaMember();
+
+        // 인스타인증을 했는지 체크
+        if (instaMember != null) {
+            // 해당 인스타회원이 좋아하는 사람들 목록
+            List<LikeablePerson> likeablePeople = instaMember.getToLikeablePeople();
+
+            if(gender != null && !Objects.equals(gender,"")) {
+                likeablePeople =
+                    likeablePersonService.findQslByToInstaMemberAndGender(likeablePeople, gender);
+            }
+    
+            if(attractiveTypeCode != null && !attractiveTypeCode.isEmpty()){
+                likeablePeople =
+                    likeablePersonService.findQslByToInstaMemberAndAttractiveTypeCode(likeablePeople, Integer.parseInt(attractiveTypeCode));
+            }
+    
+            switch (sortCode) {
+                case 1: //최신순(기본)
+                    break;
+                case 2: //날짜가 오래된 순
+                    likeablePeople = likeablePersonService.sortQslByOldCreateDate(likeablePeople);
+                    break;
+                case 3: //인기가 많은 사람 순
+                    likeablePeople = likeablePersonService.sortQslByMorePopularFromInstaMember(likeablePeople);
+                    break;
+                case 4: //인기가 적은 사람 순
+                    likeablePeople = likeablePersonService.sortQslByLessPopularFromInstaMember(likeablePeople);
+                    break;
+                case 5: //1. 성별 순(여성 -> 남성 순) 2. 최신순
+                    likeablePeople = likeablePersonService.sortQslByGender(likeablePeople);
+                    break;
+                case 6: //1. 호감사유순(외모 -> 성격 순) 2. 최신순
+                    likeablePeople = likeablePersonService.sortQslByAttractiveType(likeablePeople);
+                    break;
+            }
+            
+            model.addAttribute("likeablePeople", likeablePeople);
+            }
+    
+            return "usr/likeablePerson/toList";
+        }
+```
+
+- LikeablePersonRepositoryImpl
+```java
+@RequiredArgsConstructor
+public class LikeablePersonRepositoryImpl implements LikeablePersonRepositoryCustom {
+    private final JPAQueryFactory jpaQueryFactory;
+
+    ...
+
+    public List<LikeablePerson> findQslByToInstaMemberAndGender(List<LikeablePerson> likeablePeople, String gender){
+        return jpaQueryFactory.selectFrom(likeablePerson)
+                .where(
+                        likeablePerson.in(likeablePeople)
+                                .and(likeablePerson.fromInstaMember.gender.eq(gender))
+                )
+                .fetch();
+    }
+
+    public List<LikeablePerson> findQslByToInstaMemberAndAttractiveTypeCode(List<LikeablePerson> likeablePeople, int attractiveTypeCode) {
+        return jpaQueryFactory.selectFrom(likeablePerson)
+                .where(
+                        likeablePerson.in(likeablePeople)
+                                .and(likeablePerson.attractiveTypeCode.eq(attractiveTypeCode))
+                )
+                .fetch();
+    }
+
+    public List<LikeablePerson> sortQslByOldCreateDate(List<LikeablePerson> likeablePeople) {
+        return jpaQueryFactory.selectFrom(likeablePerson)
+                .where(likeablePerson.in(likeablePeople))
+                .orderBy(likeablePerson.createDate.asc())
+                .fetch();
+    }
+
+    public List<LikeablePerson> sortQslByMorePopularFromInstaMember(List<LikeablePerson> likeablePeople) {
+        return jpaQueryFactory.selectFrom(likeablePerson)
+                .where(likeablePerson.in(likeablePeople))
+                .orderBy(likeablePerson.fromInstaMember.likes.desc())
+                .fetch();
+    }
+
+    public List<LikeablePerson> sortQslByLessPopularFromInstaMember(List<LikeablePerson> likeablePeople) {
+        return jpaQueryFactory.selectFrom(likeablePerson)
+                .where(likeablePerson.in(likeablePeople))
+                .orderBy(likeablePerson.fromInstaMember.likes.asc())
+                .fetch();
+    }
+
+    public List<LikeablePerson> sortQslByGender(List<LikeablePerson> likeablePeople) {
+        return jpaQueryFactory.selectFrom(likeablePerson)
+                .where(likeablePerson.in(likeablePeople))
+                .orderBy(likeablePerson.fromInstaMember.gender.desc())
+                .fetch();
+    }
+
+    public List<LikeablePerson> sortQslByAttractiveType(List<LikeablePerson> likeablePeople) {
+        return jpaQueryFactory.selectFrom(likeablePerson)
+                .where(likeablePerson.in(likeablePeople))
+                .orderBy(likeablePerson.attractiveTypeCode.asc())
+                .fetch();
+    }
+}
+```
+### 5. 젠킨스를 통해서 리포지터리의 main 브랜치에 커밋 이벤트가 발생하면 자동으로 배포가 진행되도록
+**배경** <br>
+네이버클라우드플랫폼을 이용합니다. <br>
+젠킨스를 이용합니다. <br>
+강사의 가이드영상대로 진행하시면 됩니다. <br>
+나머지 미션을 수행하신 후 마지막에 진행하시면 됩니다.
+
+**목표** <br>
+리포지터리의 main 브랜치에 커밋 이벤트가 발생하면 자동으로 배포가 진행
+
+**구현** <br>
