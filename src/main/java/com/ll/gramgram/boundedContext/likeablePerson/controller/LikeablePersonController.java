@@ -15,7 +15,10 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Controller
@@ -132,7 +135,7 @@ public class LikeablePersonController {
             List<LikeablePerson> likeablePeople = instaMember.getToLikeablePeople();
             Stream<LikeablePerson> likeablePeopleStream = likeablePeople.stream();
 
-            if(gender != null && !gender.isEmpty()) {
+            if(gender != null && !Objects.equals(gender,"")) {
                 likeablePeopleStream = likeablePeopleStream.filter(
                         lp -> lp.getFromInstaMember().getGender().equals(gender)
                 );
@@ -144,6 +147,39 @@ public class LikeablePersonController {
                 );
             }
 
+            switch (sortCode) {
+                case 1: //최신순(기본)
+                    break;
+                case 2: //날짜가 오래된 순
+                    likeablePeopleStream = likeablePeopleStream.sorted(
+                            Comparator.comparing(LikeablePerson::getCreateDate)
+                    );
+                    break;
+                case 3: //인기가 많은 사람 순
+                    likeablePeopleStream = likeablePeopleStream.sorted(
+                            Comparator.comparingLong((LikeablePerson lp) -> lp.getFromInstaMember().getLikes())
+                    );
+                    break;
+                case 4: //인기가 적은 사람 순
+                    likeablePeopleStream = likeablePeopleStream.sorted(
+                            Comparator.comparingLong((LikeablePerson lp) -> lp.getFromInstaMember().getLikes())
+                                    .reversed()
+                    );
+                    break;
+                case 5: //1. 성별 순(여성 -> 남성 순) 2. 최신순
+                    likeablePeopleStream = likeablePeopleStream.sorted(
+                            Comparator.comparing((LikeablePerson lp) -> lp.getFromInstaMember().getGender())
+                                    .reversed()
+                    );
+                    break;
+                case 6: //1. 호감사유순(외모 -> 성격 순) 2. 최신순
+                    likeablePeopleStream = likeablePeopleStream.sorted(
+                            Comparator.comparingInt(LikeablePerson::getAttractiveTypeCode)
+                    );
+                    break;
+            }
+
+            likeablePeople = likeablePeopleStream.collect(Collectors.toList());
             model.addAttribute("likeablePeople", likeablePeople);
         }
 
