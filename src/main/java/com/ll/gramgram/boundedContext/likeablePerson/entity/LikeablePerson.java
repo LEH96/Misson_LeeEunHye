@@ -40,20 +40,21 @@ public class LikeablePerson extends BaseEntity {
         return modifyUnlockDate.isBefore(LocalDateTime.now());
     }
 
-    // 초 단위에서 올림 해주세요.
     public String getModifyUnlockDateRemainStrHuman() {
         LocalDateTime now = LocalDateTime.now();
-        LocalDateTime modifyUnlockDate = AppConfig.getLikeablePersonModifyUnlockDate();
 
         if(isModifyUnlocked())
             return "변경 가능";
 
-        long diff = ChronoUnit.SECONDS.between(now, modifyUnlockDate);
-        if(Math.floor(diff / (60.0 * 60)) == 0 && Math.floor((diff % (60.0 * 60)) / 60 ) == 0)
+        long diffSeconds = ChronoUnit.SECONDS.between(now, modifyUnlockDate);
+
+        if (diffSeconds <= 60) {
             return "1분 후";
-        long remainHours = (long) Math.ceil(diff / (60.0 * 60));
-        long remainMinutes = (long) Math.ceil((diff % (60.0 * 60)) / 60);
-        return remainHours + "시간 " + remainMinutes + "분 후";
+        } else {
+            long remainHours = (long) (diffSeconds / (60.0 * 60));
+            long remainMinutes = (long) ((diffSeconds / 60.0) % 60);
+            return remainHours + "시간 " + remainMinutes + "분 후";
+        }
     }
 
     public RsData updateAttractionTypeCode(int attractiveTypeCode) {

@@ -68,45 +68,41 @@ th:text="${likeablePerson.modifyUnlockDateRemainStrHuman}">
         return LocalDateTime.now().plusSeconds(likeablePersonModifyCoolTime);
     }
 ```
-getLikeablePersonModifyUnlockDate() 메서드 활용
 
 4. 확인된 메서드들을 이용하여 쿨타임에 따라 호감표시를 수정/삭제 가능하게 하는 로직 구현
 ```java
     public String getModifyUnlockDateRemainStrHuman() {
         LocalDateTime now = LocalDateTime.now();
-        LocalDateTime modifyUnlockDate = AppConfig.getLikeablePersonModifyUnlockDate();
 
         if(isModifyUnlocked())
-            return "변경 가능";
+        return "변경 가능";
 
-        long diff = ChronoUnit.SECONDS.between(now, modifyUnlockDate);
-        long remainHours = (long) Math.ceil(diff / (60.0 * 60));
-        long remainMinutes = (long) Math.ceil((diff % (60.0 * 60)) / 60);
+        long diffSeconds = ChronoUnit.SECONDS.between(now, modifyUnlockDate);
+        
+        long remainHours = (long) (diffSeconds / (60.0 * 60));
+        long remainMinutes = (long) ((diffSeconds / 60.0) % 60);
         return remainHours + "시간 " + remainMinutes + "분 후";
     }
 ```
-
-현재 시간과 modifyUnlockDate 변수를 만들어서 두 시간의 초 차이로 남아있는 시간과 분을 구해 반환해주도록 한다.
-시간과 분은 초단위에서 올림하도록 해준다.
 
 5. 1분 미만 남았을 때의 케이스 추가
 ```java
     public String getModifyUnlockDateRemainStrHuman() {
         LocalDateTime now = LocalDateTime.now();
-        LocalDateTime modifyUnlockDate = AppConfig.getLikeablePersonModifyUnlockDate();
 
         if(isModifyUnlocked())
         return "변경 가능";
 
-        long diff = ChronoUnit.SECONDS.between(now, modifyUnlockDate);
-        
-        if(Math.floor(diff / (60.0 * 60)) == 0 && Math.floor((diff % (60.0 * 60)) / 60 ) == 0)
-        return "1분 후";
-        
-        long remainHours = (long) Math.ceil(diff / (60.0 * 60));
-        long remainMinutes = (long) Math.ceil((diff % (60.0 * 60)) / 60);
-        return remainHours + "시간 " + remainMinutes + "분 후";
-    }
+        long diffSeconds = ChronoUnit.SECONDS.between(now, modifyUnlockDate);
+
+        if (diffSeconds <= 60) {
+           return "1분 후";
+        } else {
+           long remainHours = (long) (diffSeconds / (60.0 * 60));
+           long remainMinutes = (long) ((diffSeconds / 60.0) % 60);
+           return remainHours + "시간 " + remainMinutes + "분 후";
+        }
+  }
 ```
 
 ---
@@ -406,10 +402,10 @@ notificationService에서 알림을 읽었을때에 대한 처리를 해주고
     </form>
 </div>
 ```
-jdenticon 표시를 notification 엔티티 내의 기능은 그대로 두고 알림 카드에서는 삭제함.
+notification 엔티티 내의 jdenticon 표시 기능은 그대로 두고 알림 카드에서만 삭제함.
 
 - 추가 작업
-   - **알림이 없는 경우 종 버튼 옆 동그라미 표시 없애기** <br>
+   - **알림이 없는 경우 인디케이터 없애기** <br>
     각 페이지 컨트롤러에서 알림 리스트의 개수를 추가해야하는 문제가 발생.<br>
     또는 알림 리스트의 개수만 저장하는 테이블 새로 만들 필요성이 있음.<br><br>
   - **해당 호감표시 등록을 삭제한 경우 알림도 삭제 할건지**<br>
