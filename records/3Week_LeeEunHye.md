@@ -96,13 +96,13 @@ th:text="${likeablePerson.modifyUnlockDateRemainStrHuman}">
         long diffSeconds = ChronoUnit.SECONDS.between(now, modifyUnlockDate);
 
         if (diffSeconds <= 60) {
-        return "1분 후";
+           return "1분 후";
         } else {
-        long remainHours = (long) (diffSeconds / (60.0 * 60));
-        long remainMinutes = (long) ((diffSeconds / 60.0) % 60);
-        return remainHours + "시간 " + remainMinutes + "분 후";
+           long remainHours = (long) (diffSeconds / (60.0 * 60));
+           long remainMinutes = (long) ((diffSeconds / 60.0) % 60);
+           return remainHours + "시간 " + remainMinutes + "분 후";
         }
-        }
+  }
 ```
 
 ---
