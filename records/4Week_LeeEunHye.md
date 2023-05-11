@@ -175,12 +175,12 @@ java.lang.NumberFormatException: For input string: ""
                 case 3: //인기가 많은 사람 순
                     likeablePeopleStream = likeablePeopleStream.sorted(
                         Comparator.comparingLong((LikeablePerson lp) -> lp.getFromInstaMember().getLikes())
+                        .reversed()
                     );
                     break;
                 case 4: //인기가 적은 사람 순
                     likeablePeopleStream = likeablePeopleStream.sorted(
                         Comparator.comparingLong((LikeablePerson lp) -> lp.getFromInstaMember().getLikes())
-                        .reversed()
                     );
                     break;
                 case 5: //1. 성별 순(여성 -> 남성 순) 2. 최신순
@@ -328,3 +328,220 @@ public class LikeablePersonRepositoryImpl implements LikeablePersonRepositoryCus
 리포지터리의 main 브랜치에 커밋 이벤트가 발생하면 자동으로 배포가 진행
 
 **구현** <br>
+
+
+---
+### 1차 리팩토링
+
+1. 필터링과 정렬 기능을 컨트롤러 -> 서비스로 이동
+
+- LikeablePersonController
+```java
+    @PreAuthorize("isAuthenticated()")
+    @GetMapping("/toList")
+    public String showToList(Model model,@RequestParam(defaultValue = "") String gender,@RequestParam(defaultValue = "0") int attractiveTypeCode, @RequestParam(defaultValue = "1") int sortCode) {
+        InstaMember instaMember = rq.getMember().getInstaMember();
+
+        // 인스타인증을 했는지 체크
+        if (instaMember != null) {
+            // 해당 인스타회원이 좋아하는 사람들 목록
+            List<LikeablePerson> likeablePeople = instaMember.getToLikeablePeople();
+
+            if(!gender.isEmpty() || attractiveTypeCode != 0)
+                likeablePeople = likeablePersonService.filterByGenderAndAttractiveTypeCode(likeablePeople, gender, attractiveTypeCode);
+
+            if(sortCode != 1)
+                likeablePeople = likeablePersonService.sort(likeablePeople, sortCode);
+
+            model.addAttribute("likeablePeople", likeablePeople);
+        }
+
+        return "usr/likeablePerson/toList";
+    }
+```
+
+- LikeablePersonService
+```java
+    public List<LikeablePerson> filterByGenderAndAttractiveTypeCode(List<LikeablePerson> likeablePeople, String gender, int attractiveTypeCode) {
+        return likeablePersonRepository.findQslByGenderAndAttractiveTypeCode(likeablePeople, gender, attractiveTypeCode);
+    }
+
+    public List<LikeablePerson> sort(List<LikeablePerson> likeablePeople, int sortCode) {
+        return likeablePersonRepository.sortQslBySortCode(likeablePeople, sortCode);
+    }
+```
+
+- LikeablePersonRepositoryImpl
+```java
+@RequiredArgsConstructor
+public class LikeablePersonRepositoryImpl implements LikeablePersonRepositoryCustom {
+    ...
+
+    public List<LikeablePerson> findQslByGenderAndAttractiveTypeCode(List<LikeablePerson> likeablePeople, String gender, int attractiveTypeCode){
+        return jpaQueryFactory.selectFrom(likeablePerson)
+                .where(
+                        likeablePerson.in(likeablePeople)
+                                .and(gender.isEmpty() ? null : likeablePerson.fromInstaMember.gender.eq(gender))
+                                .and(attractiveTypeCode == 0 ? null : likeablePerson.attractiveTypeCode.eq(attractiveTypeCode))
+                )
+                .orderBy(likeablePerson.id.desc())
+                .fetch();
+    }
+
+    public List<LikeablePerson> sortQslBySortCode(List<LikeablePerson> likeablePeople, int sortCode){
+        JPAQuery<LikeablePerson> query = jpaQueryFactory.selectFrom(likeablePerson)
+                .where(likeablePerson.in(likeablePeople));
+
+        query = switch(sortCode) {
+                    case 2 //날짜순
+                            -> query.orderBy(likeablePerson.id.asc());
+                    case 3 //인기가 많은 사람 순
+                            -> query.orderBy(likeablePerson.fromInstaMember.likes.desc(), likeablePerson.id.desc());
+                    case 4 //인기가 적은 사람 순
+                            -> query.orderBy(likeablePerson.fromInstaMember.likes.asc(), likeablePerson.id.desc());
+                    case 5 //1. 성별 순(여성 -> 남성 순) 2. 최신순
+                            -> query.orderBy(likeablePerson.fromInstaMember.gender.desc(), likeablePerson.id.desc());
+                    case 6 //1. 호감사유순(외모 -> 성격 순) 2. 최신순
+                            -> query.orderBy(likeablePerson.attractiveTypeCode.asc(), likeablePerson.id.desc());
+                    default //최신순
+                            -> query.orderBy(likeablePerson.id.desc());
+        };
+
+        return query.fetch();
+    }
+}
+```
+
+- likeablePerson.fromInstaMember.likes를 불러오는 과정에서 예외 발생
+```
+org.hibernate.query.SemanticException: Could not resolve attribute 'likes' of 'com.ll.gramgram.boundedContext.instaMember.entity.InstaMember'
+```
+
+- 해결
+
+InstaMemberBase likes 변수 추가
+InstaMember에 increaseLikesCount와 decreaseLikesCount에도 추가해줌
+
+2. where절 수정
+```java
+    public List<LikeablePerson> findQslByGenderAndAttractiveTypeCode(InstaMember toInstaMember, String gender, int attractiveTypeCode){
+        return jpaQueryFactory.selectFrom(likeablePerson)
+                .where(
+                        likeablePerson.toInstaMember.eq(toInstaMember)
+                                .and(gender.isEmpty() ? null : likeablePerson.fromInstaMember.gender.eq(gender))
+                                .and(attractiveTypeCode == 0 ? null : likeablePerson.attractiveTypeCode.eq(attractiveTypeCode))
+                )
+                .orderBy(likeablePerson.id.desc())
+                .fetch();
+    }
+
+    public List<LikeablePerson> sortQslBySortCode(InstaMember toInstaMember, int sortCode){
+        JPAQuery<LikeablePerson> query = jpaQueryFactory.selectFrom(likeablePerson)
+                .where(likeablePerson.toInstaMember.eq(toInstaMember));
+
+        query = switch(sortCode) {
+                    case 2 //날짜순
+                            -> query.orderBy(likeablePerson.id.asc());
+                    case 3 //인기가 많은 사람 순
+                            -> query.orderBy(likeablePerson.fromInstaMember.likes.desc(), likeablePerson.id.desc());
+                    case 4 //인기가 적은 사람 순
+                            -> query.orderBy(likeablePerson.fromInstaMember.likes.asc(), likeablePerson.id.desc());
+                    case 5 //1. 성별 순(여성 -> 남성 순) 2. 최신순
+                            -> query.orderBy(likeablePerson.fromInstaMember.gender.desc(), likeablePerson.id.desc());
+                    case 6 //1. 호감사유순(외모 -> 성격 순) 2. 최신순
+                            -> query.orderBy(likeablePerson.attractiveTypeCode.asc(), likeablePerson.id.desc());
+                    default //최신순
+                            -> query.orderBy(likeablePerson.id.desc());
+        };
+
+        return query.fetch();
+    }
+```
+likeablePeople 리스트를 이용하는 경우, 리스트의 크기에 따라 쿼리가 여러 번 실행될 수 있다
+영속성 컨텍스트에서 가져오기 위해 toInstaMember를 사용
+
+3. 테스트 케이스 추가
+
+- 컨트롤러 테스트 케이스 추가
+```java
+    @Test
+    @DisplayName("성별 필터링 - 남성")
+    @WithUserDetails("user4")
+    void t018() throws Exception {
+        // WHEN
+        ResultActions resultActions = mvc
+                .perform(get("/usr/likeablePerson//toList")
+                        .with(csrf()) // CSRF 키 생성
+                        .param("gender", "M")
+                )
+                .andDo(print());
+
+        // THEN
+        resultActions
+                .andExpect(status().isOk())
+                .andExpect(handler().handlerType(LikeablePersonController.class))
+                .andExpect(handler().methodName("showToList"))
+                .andExpect(model().attribute("likeablePeople", hasSize(2)));
+    }
+
+    @Test
+    @DisplayName("호감사유 필터링 - 성격")
+    @WithUserDetails("user4")
+    void t019() throws Exception {
+        // WHEN
+        ResultActions resultActions = mvc
+                .perform(get("/usr/likeablePerson//toList")
+                        .with(csrf()) // CSRF 키 생성
+                        .param("attractiveTypeCode", "2")
+                )
+                .andDo(print());
+
+        // THEN
+        resultActions
+                .andExpect(status().isOk())
+                .andExpect(handler().handlerType(LikeablePersonController.class))
+                .andExpect(handler().methodName("showToList"))
+                .andExpect(model().attribute("likeablePeople", hasSize(1)));
+    }
+```
+
+- 컨트롤러 테스트 케이스 추가
+```java
+    @Test
+    @DisplayName("정렬 - 날짜 순")
+    void t009() throws Exception {
+            // Given
+            List<LikeablePerson> likeablePeople = likeablePersonService.sort(memberService.findByUsername("user4").get().getInstaMember(), 2);
+
+        assertThat(likeablePeople)
+        .isSortedAccordingTo(
+        Comparator.comparing(LikeablePerson::getId)
+        );
+        }
+
+    @Test
+    @DisplayName("정렬 - 인기 적은 순")
+    void t010() throws Exception {
+            // Given
+            List<LikeablePerson> likeablePeople = likeablePersonService.sort(memberService.findByUsername("user4").get().getInstaMember(), 4);
+
+        assertThat(likeablePeople)
+        .isSortedAccordingTo(
+        Comparator.comparing((LikeablePerson lp) -> lp.getFromInstaMember().getLikes())
+        .thenComparing(Comparator.comparing(LikeablePerson::getId).reversed())
+        );
+        }
+
+    @Test
+    @DisplayName("정렬 - 호감사유순")
+    void t011() throws Exception {
+            // Given
+            List<LikeablePerson> likeablePeople = likeablePersonService.sort(memberService.findByUsername("user4").get().getInstaMember(), 6);
+
+        assertThat(likeablePeople)
+        .isSortedAccordingTo(
+        Comparator.comparing(LikeablePerson::getAttractiveTypeCode)
+        .thenComparing(Comparator.comparing(LikeablePerson::getId).reversed())
+        );
+        }
+```

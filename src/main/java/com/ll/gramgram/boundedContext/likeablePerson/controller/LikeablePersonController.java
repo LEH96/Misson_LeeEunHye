@@ -15,11 +15,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Comparator;
 import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Controller
 @RequestMapping("/usr/likeablePerson")
@@ -126,7 +122,7 @@ public class LikeablePersonController {
 
     @PreAuthorize("isAuthenticated()")
     @GetMapping("/toList")
-    public String showToList(Model model, String gender, String attractiveTypeCode, @RequestParam(defaultValue = "1") int sortCode) {
+    public String showToList(Model model,@RequestParam(defaultValue = "") String gender,@RequestParam(defaultValue = "0") int attractiveTypeCode, @RequestParam(defaultValue = "1") int sortCode) {
         InstaMember instaMember = rq.getMember().getInstaMember();
 
         // 인스타인증을 했는지 체크
@@ -134,35 +130,11 @@ public class LikeablePersonController {
             // 해당 인스타회원이 좋아하는 사람들 목록
             List<LikeablePerson> likeablePeople = instaMember.getToLikeablePeople();
 
-            if(gender != null && !Objects.equals(gender,"")) {
-                likeablePeople =
-                        likeablePersonService.findQslByToInstaMemberAndGender(likeablePeople, gender);
-            }
+            if(!gender.isEmpty() || attractiveTypeCode != 0)
+                likeablePeople = likeablePersonService.filterByGenderAndAttractiveTypeCode(instaMember, gender, attractiveTypeCode);
 
-            if(attractiveTypeCode != null && !attractiveTypeCode.isEmpty()){
-                likeablePeople =
-                        likeablePersonService.findQslByToInstaMemberAndAttractiveTypeCode(likeablePeople, Integer.parseInt(attractiveTypeCode));
-            }
-
-            switch (sortCode) {
-                case 1: //최신순(기본)
-                    break;
-                case 2: //날짜가 오래된 순
-                    likeablePeople = likeablePersonService.sortQslByOldCreateDate(likeablePeople);
-                    break;
-                case 3: //인기가 많은 사람 순
-                    likeablePeople = likeablePersonService.sortQslByMorePopularFromInstaMember(likeablePeople);
-                    break;
-                case 4: //인기가 적은 사람 순
-                    likeablePeople = likeablePersonService.sortQslByLessPopularFromInstaMember(likeablePeople);
-                    break;
-                case 5: //1. 성별 순(여성 -> 남성 순) 2. 최신순
-                    likeablePeople = likeablePersonService.sortQslByGender(likeablePeople);
-                    break;
-                case 6: //1. 호감사유순(외모 -> 성격 순) 2. 최신순
-                    likeablePeople = likeablePersonService.sortQslByAttractiveType(likeablePeople);
-                    break;
-            }
+            if(sortCode != 1)
+                likeablePeople = likeablePersonService.sort(instaMember, sortCode);
 
             model.addAttribute("likeablePeople", likeablePeople);
         }

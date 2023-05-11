@@ -52,6 +52,7 @@ public class NotProd {
                 Member memberUser8ByNaver = memberService.whenSocialLogin("NAVER", "NAVER__%s".formatted(naverDevUserOAuthId)).getData();
                 Member memberUser9ByFacebook = memberService.whenSocialLogin("FACEBOOK", "FACEBOOK__%s".formatted(facebookDevUserOAuthId)).getData();
 
+                instaMemberService.connect(memberUser1, "insta_user1", "M");
                 instaMemberService.connect(memberUser2, "insta_user2", "M");
                 instaMemberService.connect(memberUser3, "insta_user3", "W");
                 instaMemberService.connect(memberUser4, "insta_user4", "M");
@@ -64,6 +65,10 @@ public class NotProd {
                 Ut.reflection.setFieldValue(likeablePersonToInstaUser100, "modifyUnlockDate", LocalDateTime.now().minusSeconds(1));
 
                 LikeablePerson likeablePersonToInstaUserAbcd = likeablePersonService.like(memberUser3, "insta_user_abcd", 2).getData();
+
+                LikeablePerson likeablePerson1ToInstaUser4 = likeablePersonService.like(memberUser1, "insta_user4", 2).getData();
+                LikeablePerson likeablePerson2ToInstaUser4 = likeablePersonService.like(memberUser2, "insta_user4", 3).getData();
+                LikeablePerson likeablePerson5ToInstaUser4 = likeablePersonService.like(memberUser5, "insta_user4", 1).getData();
             }
         };
     }

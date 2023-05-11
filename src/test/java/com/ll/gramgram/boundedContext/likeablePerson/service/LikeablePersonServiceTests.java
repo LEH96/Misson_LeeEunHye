@@ -3,6 +3,7 @@ package com.ll.gramgram.boundedContext.likeablePerson.service;
 
 import com.ll.gramgram.TestUt;
 import com.ll.gramgram.base.appConfig.AppConfig;
+import com.ll.gramgram.base.baseEntity.BaseEntity;
 import com.ll.gramgram.boundedContext.instaMember.entity.InstaMember;
 import com.ll.gramgram.boundedContext.likeablePerson.entity.LikeablePerson;
 import com.ll.gramgram.boundedContext.likeablePerson.repository.LikeablePersonRepository;
@@ -18,6 +19,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -262,5 +264,43 @@ public class LikeablePersonServiceTests {
         assertThat(
                 likeablePersonToBts.getModifyUnlockDate().isAfter(coolTime)
         ).isTrue();
+    }
+
+    @Test
+    @DisplayName("정렬 - 날짜 순")
+    void t009() throws Exception {
+        // Given
+        List<LikeablePerson> likeablePeople = likeablePersonService.sort(memberService.findByUsername("user4").get().getInstaMember(), 2);
+
+        assertThat(likeablePeople)
+                .isSortedAccordingTo(
+                        Comparator.comparing(LikeablePerson::getId)
+                );
+    }
+
+    @Test
+    @DisplayName("정렬 - 인기 적은 순")
+    void t010() throws Exception {
+        // Given
+        List<LikeablePerson> likeablePeople = likeablePersonService.sort(memberService.findByUsername("user4").get().getInstaMember(), 4);
+
+        assertThat(likeablePeople)
+                .isSortedAccordingTo(
+                        Comparator.comparing((LikeablePerson lp) -> lp.getFromInstaMember().getLikes())
+                                .thenComparing(Comparator.comparing(LikeablePerson::getId).reversed())
+                );
+    }
+
+    @Test
+    @DisplayName("정렬 - 호감사유순")
+    void t011() throws Exception {
+        // Given
+        List<LikeablePerson> likeablePeople = likeablePersonService.sort(memberService.findByUsername("user4").get().getInstaMember(), 6);
+
+        assertThat(likeablePeople)
+                .isSortedAccordingTo(
+                        Comparator.comparing(LikeablePerson::getAttractiveTypeCode)
+                                .thenComparing(Comparator.comparing(LikeablePerson::getId).reversed())
+                );
     }
 }
