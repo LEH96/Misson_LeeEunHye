@@ -1,4 +1,4 @@
-package com.ll.gramgram.boundedContext.home.controller;
+package com.ll.gramgram.boundedContext.instaMember.controller;
 
 import com.ll.gramgram.base.rq.Rq;
 import jakarta.servlet.http.HttpSession;

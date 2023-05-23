@@ -1,4 +1,4 @@
-package com.ll.gramgram.boundedContext.home.controller;
+package com.ll.gramgram.boundedContext.instaMember.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;

@@ -18,6 +18,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -227,7 +228,7 @@ public class LikeablePersonServiceTests {
     @DisplayName("호감표시를 하면 쿨타임이 지정된다.")
     void t007() throws Exception {
         // 현재시점 기준에서 쿨타임이 다 차는 시간을 구한다.(미래)
-        LocalDateTime coolTime = AppConfig.getLikeablePersonModifyUnlockDate();
+        LocalDateTime coolTime = AppConfig.genLikeablePersonModifyUnlockDate();
 
         Member memberUser3 = memberService.findByUsername("user3").orElseThrow();
         // 호감표시를 생성한다.
@@ -244,7 +245,7 @@ public class LikeablePersonServiceTests {
     @DisplayName("호감사유를 변경하면 쿨타임이 갱신된다.")
     void t008() throws Exception {
         // 현재시점 기준에서 쿨타임이 다 차는 시간을 구한다.(미래)
-        LocalDateTime coolTime = AppConfig.getLikeablePersonModifyUnlockDate();
+        LocalDateTime coolTime = AppConfig.genLikeablePersonModifyUnlockDate();
 
         Member memberUser3 = memberService.findByUsername("user3").orElseThrow();
         // 호감표시를 생성한다.
@@ -253,7 +254,7 @@ public class LikeablePersonServiceTests {
         // 호감표시를 생성하면 쿨타임이 지정되기 때문에, 그래서 바로 수정이 안된다.
         // 그래서 강제로 쿨타임이 지난것으로 만든다.
         // 테스트를 위해서 억지로 값을 넣는다.
-        TestUt.setFieldValue(likeablePersonToBts, "modifyUnlockDate", LocalDateTime.now().minusSeconds(-1));
+        TestUt.setFieldValue(likeablePersonToBts, "modifyUnlockDate", LocalDateTime.now().minusSeconds(1));
 
         // 수정을 하면 쿨타임이 갱신된다.
         likeablePersonService.modifyAttractive(memberUser3, likeablePersonToBts, 1);
@@ -262,5 +263,43 @@ public class LikeablePersonServiceTests {
         assertThat(
                 likeablePersonToBts.getModifyUnlockDate().isAfter(coolTime)
         ).isTrue();
+    }
+
+    @Test
+    @DisplayName("정렬 - 날짜 순")
+    void t009() throws Exception {
+        // Given
+        List<LikeablePerson> likeablePeople = likeablePersonService.sortBySortCode(memberService.findByUsername("user4").get().getInstaMember(), 2);
+
+        assertThat(likeablePeople)
+                .isSortedAccordingTo(
+                        Comparator.comparing(LikeablePerson::getId)
+                );
+    }
+
+    @Test
+    @DisplayName("정렬 - 인기 적은 순")
+    void t010() throws Exception {
+        // Given
+        List<LikeablePerson> likeablePeople = likeablePersonService.sortBySortCode(memberService.findByUsername("user4").get().getInstaMember(), 4);
+
+        assertThat(likeablePeople)
+                .isSortedAccordingTo(
+                        Comparator.comparing((LikeablePerson lp) -> lp.getFromInstaMember().getLikes())
+                                .thenComparing(Comparator.comparing(LikeablePerson::getId).reversed())
+                );
+    }
+
+    @Test
+    @DisplayName("정렬 - 호감사유순")
+    void t011() throws Exception {
+        // Given
+        List<LikeablePerson> likeablePeople = likeablePersonService.sortBySortCode(memberService.findByUsername("user4").get().getInstaMember(), 6);
+
+        assertThat(likeablePeople)
+                .isSortedAccordingTo(
+                        Comparator.comparing(LikeablePerson::getAttractiveTypeCode)
+                                .thenComparing(Comparator.comparing(LikeablePerson::getId).reversed())
+                );
     }
 }

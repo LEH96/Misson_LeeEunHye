@@ -24,7 +24,8 @@ public class AppConfig {
         AppConfig.likeablePersonModifyCoolTime = likeablePersonModifyCoolTime;
     }
 
-    public static LocalDateTime getLikeablePersonModifyUnlockDate() {
+    public static LocalDateTime genLikeablePersonModifyUnlockDate() {
         return LocalDateTime.now().plusSeconds(likeablePersonModifyCoolTime);
     }
 }
+
