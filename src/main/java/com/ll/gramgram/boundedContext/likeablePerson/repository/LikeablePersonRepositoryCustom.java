@@ -9,7 +9,7 @@ import java.util.Optional;
 public interface LikeablePersonRepositoryCustom {
     Optional<LikeablePerson> findQslByFromInstaMemberIdAndToInstaMember_username(long fromInstaMemberId, String toInstaMemberUsername);
 
-    List<LikeablePerson> findQslByGenderAndAttractiveTypeCode(InstaMember toInstamember, String gender, int attractiveTypeCode);
+    List<LikeablePerson> findQslByToInstaMember(InstaMember toInstamember, String gender, int attractiveTypeCode);
 
     List<LikeablePerson> sortQslBySortCode(InstaMember toInstamember, int sortCode);
 }

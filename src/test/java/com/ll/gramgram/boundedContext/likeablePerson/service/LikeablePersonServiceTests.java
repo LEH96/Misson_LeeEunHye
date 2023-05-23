@@ -3,7 +3,6 @@ package com.ll.gramgram.boundedContext.likeablePerson.service;
 
 import com.ll.gramgram.TestUt;
 import com.ll.gramgram.base.appConfig.AppConfig;
-import com.ll.gramgram.base.baseEntity.BaseEntity;
 import com.ll.gramgram.boundedContext.instaMember.entity.InstaMember;
 import com.ll.gramgram.boundedContext.likeablePerson.entity.LikeablePerson;
 import com.ll.gramgram.boundedContext.likeablePerson.repository.LikeablePersonRepository;
@@ -270,7 +269,7 @@ public class LikeablePersonServiceTests {
     @DisplayName("정렬 - 날짜 순")
     void t009() throws Exception {
         // Given
-        List<LikeablePerson> likeablePeople = likeablePersonService.sort(memberService.findByUsername("user4").get().getInstaMember(), 2);
+        List<LikeablePerson> likeablePeople = likeablePersonService.sortBySortCode(memberService.findByUsername("user4").get().getInstaMember(), 2);
 
         assertThat(likeablePeople)
                 .isSortedAccordingTo(
@@ -282,7 +281,7 @@ public class LikeablePersonServiceTests {
     @DisplayName("정렬 - 인기 적은 순")
     void t010() throws Exception {
         // Given
-        List<LikeablePerson> likeablePeople = likeablePersonService.sort(memberService.findByUsername("user4").get().getInstaMember(), 4);
+        List<LikeablePerson> likeablePeople = likeablePersonService.sortBySortCode(memberService.findByUsername("user4").get().getInstaMember(), 4);
 
         assertThat(likeablePeople)
                 .isSortedAccordingTo(
@@ -295,7 +294,7 @@ public class LikeablePersonServiceTests {
     @DisplayName("정렬 - 호감사유순")
     void t011() throws Exception {
         // Given
-        List<LikeablePerson> likeablePeople = likeablePersonService.sort(memberService.findByUsername("user4").get().getInstaMember(), 6);
+        List<LikeablePerson> likeablePeople = likeablePersonService.sortBySortCode(memberService.findByUsername("user4").get().getInstaMember(), 6);
 
         assertThat(likeablePeople)
                 .isSortedAccordingTo(

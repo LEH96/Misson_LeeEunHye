@@ -4,6 +4,7 @@ import com.ll.gramgram.boundedContext.instaMember.entity.InstaMember;
 import com.ll.gramgram.boundedContext.likeablePerson.entity.LikeablePerson;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import jakarta.annotation.Nullable;
 import lombok.RequiredArgsConstructor;
 
 import java.util.List;
@@ -30,7 +31,7 @@ public class LikeablePersonRepositoryImpl implements LikeablePersonRepositoryCus
         );
     }
 
-    public List<LikeablePerson> findQslByGenderAndAttractiveTypeCode(InstaMember toInstaMember, String gender, int attractiveTypeCode){
+    public List<LikeablePerson> findQslByToInstaMember(InstaMember toInstaMember, @Nullable String gender, int attractiveTypeCode){
         return jpaQueryFactory.selectFrom(likeablePerson)
                 .where(
                         likeablePerson.toInstaMember.eq(toInstaMember)

@@ -131,10 +131,10 @@ public class LikeablePersonController {
             List<LikeablePerson> likeablePeople = instaMember.getToLikeablePeople();
 
             if(!gender.isEmpty() || attractiveTypeCode != 0)
-                likeablePeople = likeablePersonService.filterByGenderAndAttractiveTypeCode(instaMember, gender, attractiveTypeCode);
+                likeablePeople = likeablePersonService.findByToInstaMember(instaMember, gender, attractiveTypeCode);
 
             if(sortCode != 1)
-                likeablePeople = likeablePersonService.sort(instaMember, sortCode);
+                likeablePeople = likeablePersonService.sortBySortCode(instaMember, sortCode);
 
             model.addAttribute("likeablePeople", likeablePeople);
         }
